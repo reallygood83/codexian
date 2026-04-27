@@ -1,0 +1,134 @@
+:root {
+  --codexian-ink: #0d0d0d;
+  --codexian-paper: #f7f5ef;
+  --codexian-green: #10a37f;
+  --codexian-graphite: #2a2d2e;
+  --codexian-line: #d8d3c7;
+}
+
+.codexian-view {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(16, 163, 127, 0.13), transparent 28rem),
+    linear-gradient(145deg, var(--background-primary), var(--background-secondary));
+}
+
+.codexian-header {
+  padding: 18px 18px 14px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.codexian-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.codexian-mark {
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(16, 163, 127, 0.45);
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  color: var(--codexian-green);
+  background: rgba(16, 163, 127, 0.08);
+}
+
+.codexian-title {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.codexian-subtitle {
+  color: var(--text-muted);
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.codexian-toolbar,
+.codexian-composer-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.codexian-pill {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 999px;
+  padding: 6px 10px;
+  background: var(--background-primary);
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.codexian-log {
+  flex: 1;
+  overflow: auto;
+  padding: 16px;
+}
+
+.codexian-message {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  white-space: pre-wrap;
+}
+
+.codexian-message-user {
+  border-color: rgba(16, 163, 127, 0.35);
+}
+
+.codexian-message-assistant {
+  background: var(--background-primary);
+}
+
+.codexian-message-error {
+  border-color: var(--text-error);
+  color: var(--text-error);
+}
+
+.codexian-composer {
+  border-top: 1px solid var(--background-modifier-border);
+  padding: 12px;
+  background: var(--background-primary);
+}
+
+.codexian-input {
+  width: 100%;
+  min-height: 92px;
+  resize: vertical;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+.codexian-button-primary {
+  background: var(--codexian-green) !important;
+  color: white !important;
+}
+
+.codexian-settings-card {
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 14px;
+  padding: 14px;
+  margin: 12px 0;
+  background: var(--background-primary);
+}
+
+.codexian-status-line {
+  font-family: var(--font-monospace);
+  font-size: 12px;
+  white-space: pre-wrap;
+  background: var(--background-secondary);
+  padding: 10px;
+  border-radius: 10px;
+  max-height: 260px;
+  overflow: auto;
+}
+

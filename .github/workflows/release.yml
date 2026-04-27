@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "[0-9]+.[0-9]+.[0-9]+"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Verify manifest version matches tag
+        run: |
+          VERSION="$(node -p "require('./manifest.json').version")"
+          if [ "$VERSION" != "${GITHUB_REF_NAME}" ]; then
+            echo "manifest.json version ($VERSION) must match tag (${GITHUB_REF_NAME})"
+            exit 1
+          fi
+
+      - name: Create BRAT release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            main.js
+            manifest.json
+            styles.css
+

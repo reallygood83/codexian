@@ -1,0 +1,25 @@
+# Local planning and private specs
+local-spec/
+
+# Obsidian plugin build artifacts
+main.js
+*.map
+
+# Dependencies and caches
+node_modules/
+.npm/
+.pnpm-store/
+.turbo/
+.cache/
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+
+# OS/editor noise
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
