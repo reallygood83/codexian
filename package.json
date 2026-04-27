@@ -1,6 +1,6 @@
 {
   "name": "codexian",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Codexian - OpenAI Codex CLI inside Obsidian",
   "main": "main.js",
   "scripts": {

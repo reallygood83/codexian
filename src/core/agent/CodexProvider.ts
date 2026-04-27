@@ -1,4 +1,6 @@
 import { spawn, type ChildProcess } from 'child_process';
+import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 import type { AgentEvent, AgentProvider, AgentQuery, CodexianSettings } from '../types';
@@ -30,10 +32,16 @@ export class CodexProvider implements AgentProvider {
     env.PATH = mergePath(env.PATH, [path.dirname(codexPath)]);
 
     const prompt = this.buildPrompt(input);
+    const outputPath = path.join(
+      os.tmpdir(),
+      `codexian-last-message-${Date.now()}-${Math.random().toString(36).slice(2)}.md`
+    );
     const args = [
       'exec',
       '--color',
       'never',
+      '--output-last-message',
+      outputPath,
       '--skip-git-repo-check',
       '--cd',
       input.cwd,
@@ -52,7 +60,7 @@ export class CodexProvider implements AgentProvider {
       args.splice(1, 0, '--sandbox', 'workspace-write');
     }
 
-    yield* this.runProcess(codexPath, args, env, prompt);
+    yield* this.runProcess(codexPath, args, env, prompt, outputPath);
     yield { type: 'done' };
   }
 
@@ -100,7 +108,8 @@ export class CodexProvider implements AgentProvider {
     command: string,
     args: string[],
     env: NodeJS.ProcessEnv,
-    stdin: string
+    stdin: string,
+    outputPath: string
   ): AsyncGenerator<AgentEvent> {
     const child = spawn(command, args, {
       env,
@@ -112,24 +121,29 @@ export class CodexProvider implements AgentProvider {
     child.stdin?.end(stdin);
 
     const queue: AgentEvent[] = [];
+    let stderrBuffer = '';
     let done = false;
+    let exitCode: number | null = null;
 
     child.stdout.on('data', (chunk: Buffer) => {
-      queue.push({ type: 'text', content: chunk.toString() });
+      // Codex CLI stdout includes session headers, hook logs, token reports, and
+      // sometimes the final answer. The UI reads only --output-last-message.
     });
     child.stderr.on('data', (chunk: Buffer) => {
-      queue.push({ type: 'text', content: chunk.toString() });
+      stderrBuffer += chunk.toString();
     });
     child.on('error', (error) => {
       queue.push({ type: 'error', content: error.message });
       done = true;
     });
     child.on('close', (code) => {
+      exitCode = code;
       if (code && code !== 0) {
         const pathHint = code === 127
           ? `\n\nCommand-not-found hint: Obsidian may not have the same PATH as your terminal. Current PATH passed to Codexian:\n${env.PATH || '(empty)'}`
           : '';
-        queue.push({ type: 'error', content: `Codex exited with code ${code}.${pathHint}` });
+        const details = stderrBuffer.trim() ? `\n\n${stderrBuffer.trim()}` : '';
+        queue.push({ type: 'error', content: `Codex exited with code ${code}.${pathHint}${details}` });
       }
       done = true;
     });
@@ -143,6 +157,32 @@ export class CodexProvider implements AgentProvider {
       }
     }
 
+    if (exitCode === 0) {
+      const finalMessage = this.readLastMessage(outputPath);
+      if (finalMessage) {
+        yield { type: 'text', content: finalMessage };
+      } else if (stderrBuffer.trim()) {
+        yield { type: 'error', content: stderrBuffer.trim() };
+      }
+    }
+
+    this.removeTempFile(outputPath);
     this.currentProcess = null;
+  }
+
+  private readLastMessage(outputPath: string): string {
+    try {
+      return fs.readFileSync(outputPath, 'utf8').trim();
+    } catch {
+      return '';
+    }
+  }
+
+  private removeTempFile(outputPath: string): void {
+    try {
+      fs.unlinkSync(outputPath);
+    } catch {
+      // Best-effort cleanup only.
+    }
   }
 }
