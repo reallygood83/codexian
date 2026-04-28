@@ -1,6 +1,6 @@
 # Codexian
 
-OpenAI Codex and oh-my-codex setup inside Obsidian, with no API key required for core use.
+Run OpenAI Codex CLI inside Obsidian, with note context, visual generation, Memory Map search, and one-click setup helpers.
 
 <p align="center">
   <a href="https://www.youtube.com/@%EB%B0%B0%EC%9B%80%EC%9D%98%EB%8B%AC%EC%9D%B8-p5v">
@@ -11,7 +11,9 @@ OpenAI Codex and oh-my-codex setup inside Obsidian, with no API key required for
   </a>
 </p>
 
-Codexian is a desktop-only Obsidian plugin that brings OpenAI Codex into your vault as a sidebar agent. It is designed for note-aware coding, writing, refactoring, local automation, and visual PNG/SVG asset generation from your Obsidian notes.
+Codexian is a desktop-only Obsidian plugin that wraps your authenticated Codex CLI session. It is built for users who want an ObsidianCode-like agent sidebar, but powered by Codex instead of Claude Code.
+
+Core chat and visual generation are routed through Codex CLI. Codexian does **not** require an OpenAI API key for normal use.
 
 ## Current Release
 
@@ -23,58 +25,76 @@ Install with:
 https://github.com/reallygood83/codexian
 ```
 
-Core chat works through your authenticated Codex CLI session. Codexian does **not** require an OpenAI API key for normal chat use.
+## What It Does
 
-## Features
+- **Codex sidebar in Obsidian**: Chat with Codex from a native sidebar using an ObsidianCode-style interface.
+- **Automatic note context**: The active note, selected text, and pinned notes can be sent to Codex automatically.
+- **Pinned and dismissible note chips**: Pin important notes with `+` or remove noisy notes with `x`.
+- **Memory Map**: Build a local vault index, find related notes, and add them to context with clear hover reasons.
+- **Visible Codex progress**: Codex CLI progress lines are shown while the final answer is being generated.
+- **Slash command menu**: Type `/` to open a scrollable Codex-style command menu.
+- **Model selector**: Includes `gpt-5.5`, `gpt-5.4`, and fallback Codex model options. Settings still allow manual model IDs.
+- **Permission modes**: Review, Auto, and Yolo map to Codex sandbox behavior.
+- **Obsidian appearance-aware text**: Chat and composer text follow your Obsidian font, size, and line-height settings.
 
-- **Codex sidebar**: Ask Codex to work with your vault from an Obsidian-native chat panel.
-- **Current-note context**: Active note content and selected text are automatically attached to prompts.
-- **Pinned note context**: Pin important notes so they stay attached even when you switch files.
-- **Dismissible note context**: Use the `x` button on a note chip when you want to work without that note being sent to Codex.
-- **Memory Map**: Build a local vault index and use **Find Context** to recommend related notes from the current note.
-- **Related note chips**: Add recommended notes to Codexian context with `+`, hide noisy recommendations with `x`, or click a chip to open the note.
-- **Clear recommendation reasons**: Hover a Memory Map recommendation to see why it was selected.
-- **Improved local ranking**: Memory Map filters URL noise and uses weighted title/tag/link/heading signals plus BM25-style term scoring.
-- **Collapsible Memory Map**: Fold the section when you do not need it, and clear all Find Context results at once.
-- **Obsidian appearance-aware text**: Chat messages and composer text follow your Obsidian text font, size, and line height settings.
-- **Stable note chips**: Current-note chips stay visible when the sidebar takes focus, matching ObsidianCode behavior.
-- **Attach current note command**: Use Obsidian's hotkey settings to bind `Codexian: Attach current note to chat`.
-- **Fast composer UX**: Press Enter to send, or Shift+Enter for a new line.
-- **ObsidianCode legacy UI**: The chat shell, message bubbles, input box, toolbar, note chips, and stylesheet are carried from ObsidianCode's `.oc-*` legacy.
-- **Clean Codex replies**: Codexian reads Codex's final response from `--output-last-message` so session headers, hooks, and token logs stay out of the chat.
-- **Visible Codex progress**: Important Codex CLI status lines are shown while the final answer is being generated.
-- **Vault working directory**: Codex runs with the vault as its working root.
-- **Permission modes**: Review, Auto, and Yolo modes map to Codex sandbox behavior.
-- **Current Codex model selector**: Includes `gpt-5.5` plus fallback Codex models, while settings still allow manual model entry.
-- **No API key for core use**: Codexian uses your authenticated Codex CLI session, like ObsidianCode uses Claude Code CLI.
-- **Codex visual assets**: Generate PNG or SVG infographics, posters, cartoons, concept-art boards, or diagram-like illustrations from note context.
-- **Codex built-in PNG generation**: Use Codex CLI `image_generation` to generate real PNG images, then embed them into the note.
-- **Prompt-drafted visual generation**: Codexian analyzes the current note, drafts an image-generation prompt, then applies that prompt to create the selected PNG or SVG output.
-- **GPT Image 2 prompt recipes**: Visual prompts are structured with subject, composition, style, environment, lighting, typography, details, and aspect ratio, with category recipes for thumbnails, infographics, posters, UI mockups, products, avatars, and storyboards.
-- **Editable visual prompt preview**: Review and edit the generated image prompt before Codexian creates the visual.
-- **Visual generation progress modal**: Image creation shows each step in a modal and writes progress/error messages to the console.
-- **Automatic top embedding**: Generated PNG/SVG files are saved into the configured attachment folder and embedded at the top of the active note with `![[...]]`.
-- **Properties-safe embedding**: Visual embeds are inserted below YAML properties/frontmatter so note properties stay valid.
-- **Korean-safe SVG guidance**: Visual generation prompts include Korean font fallbacks and instructions to avoid garbled Korean labels.
-- **One-click Codex update**: Settings can update Codex CLI and enable `image_generation` for PNG visual assets.
-- **One-click Obsidian Skills setup**: Settings can install or update [`kepano/obsidian-skills`](https://github.com/kepano/obsidian-skills) into `~/.codex/skills` for Codex CLI.
-- **Slash command menu**: Type `/` in the composer to see scrollable Codex-style command suggestions; slash prompts are sent raw instead of being wrapped with note context.
-- **oh-my-codex setup**: Settings include diagnostics and an install/update flow for Codex CLI plus OMX.
-- **macOS and Windows aware**: CLI detection, diagnostics, and command previews adapt by platform.
+## Visual Generation
 
-## Why Codexian?
+Codexian can generate and embed PNG or SVG visual assets from the current note.
 
-Obsidian is where many people keep their project notes, research, drafts, and plans. Codexian makes that vault directly actionable: Codex can read the note you are working on, reason over it, and help transform it into code, structured writing, or generated visual assets.
+Supported visual types:
 
-The plugin also gives power users a path into [oh-my-codex](https://github.com/Yeachan-Heo/oh-my-codex), while keeping basic Codex usage independent from OMX.
+- Infographic
+- Poster
+- Cartoon / storyboard
+- Concept art
+- Diagram illustration
+- YouTube thumbnail
+- Profile / avatar
+- Product marketing
+- E-commerce hero image
+- UI / app mockup
+
+Flow:
+
+1. Open a note.
+2. Click the image button in the Codexian sidebar.
+3. Choose `PNG via Codex image generation` or `SVG via Codex code generation`.
+4. Choose a visual format.
+5. Codexian analyzes the note and drafts a production-ready image prompt.
+6. Review or edit the prompt.
+7. Codexian generates the asset and embeds it into the note.
+
+Important details:
+
+- PNG generation uses Codex CLI built-in `image_generation`.
+- SVG generation uses Codex CLI to write a text-safe SVG file.
+- Generated assets are saved to the configured media folder.
+- Embeds are inserted below YAML frontmatter/properties so Obsidian properties stay valid.
+- Korean text guidance is included to reduce garbled labels.
+- Prompt drafting uses GPT Image 2-style recipes: `subject`, `composition`, `style`, `environment`, `lighting`, `typography`, `details`, and `aspect_ratio`.
+
+## One-Click Setup Helpers
+
+Open Obsidian Settings → Community plugins → Codexian.
+
+Codexian settings include:
+
+- **Run diagnostics**: Check whether Obsidian can find `codex`, `npm`, `node`, `git`, and `omx`.
+- **Install / update Codex + OMX**: Installs `@openai/codex` and `oh-my-codex`, then runs `omx setup` and `omx doctor`.
+- **Update Codex CLI**: Runs `npm install -g @openai/codex@latest`.
+- **Enable image generation**: Runs `codex features enable image_generation`.
+- **Install / update Obsidian Skills**: Installs [`kepano/obsidian-skills`](https://github.com/kepano/obsidian-skills) into `~/.codex/skills`.
+
+`obsidian-skills` is not an Obsidian community plugin. It is an Agent Skills repository that teaches Codex CLI about Obsidian Markdown, Bases, JSON Canvas, Obsidian CLI workflows, and Defuddle web extraction.
 
 ## Requirements
 
 - Obsidian desktop.
 - Node.js 20+.
+- Git, for one-click Obsidian Skills installation.
 - OpenAI Codex CLI installed and authenticated.
-- For PNG visual generation: a recent Codex CLI with `image_generation` enabled.
-- Optional: oh-my-codex for OMX workflows.
+- A recent Codex CLI with `image_generation` enabled for PNG visual generation.
+- Optional: oh-my-codex for advanced OMX workflows.
 
 Recommended CLI setup:
 
@@ -88,24 +108,6 @@ omx doctor
 
 On Windows, use PowerShell. If advanced OMX team runtime features are unstable natively, WSL remains a practical fallback.
 
-## Installation For Development
-
-```bash
-npm install
-npm run build
-```
-
-Copy these files into your vault:
-
-```text
-<vault>/.obsidian/plugins/codexian/
-  main.js
-  manifest.json
-  styles.css
-```
-
-Then enable **Codexian** in Obsidian settings.
-
 ## Installing With BRAT
 
 Codexian supports BRAT installation from GitHub releases.
@@ -113,7 +115,7 @@ Codexian supports BRAT installation from GitHub releases.
 1. Install **Obsidian42 - BRAT** from Obsidian Community Plugins.
 2. Open BRAT settings.
 3. Click **Add Beta Plugin**.
-4. Paste the Codexian GitHub repository URL:
+4. Paste this repository URL:
 
 ```text
 https://github.com/reallygood83/codexian
@@ -133,25 +135,25 @@ If BRAT does not update immediately, use BRAT's plugin update command or restart
 
 Codexian is designed to make Obsidian notes feel native inside Codex CLI:
 
-- Open a note and Codexian automatically detects it.
-- Click the pin icon to keep a note attached while you switch files.
-- Click `x` to remove a note from Codexian context when you want a note-independent conversation.
+- Open a note and Codexian detects it automatically.
+- Use the pin icon to keep a note attached while switching files.
+- Use `x` to exclude a note when you want a note-independent conversation.
 - Run `Codexian: Attach current note to chat` from Obsidian commands or bind it to a hotkey.
 - Ask Codex normally; Codexian sends the selected note context through Codex CLI.
 
 ## Memory Map
 
-**Codexian Memory Map** is a one-button way to find relevant notes in your vault.
+Memory Map is a local, API-free way to find relevant notes in your vault.
 
 User flow:
 
 1. Click **Build Memory Map** once to index the vault locally.
 2. Open any note.
-3. Click **Find Context** or use a hotkey.
+3. Click **Find Context**.
 4. Codexian recommends related notes with clear reasons.
-5. Add useful notes to the chat context with `+`.
+5. Add useful notes to Codexian context with `+`.
 
-Memory Map uses a local rule-based index of note titles, tags, links, backlinks, headings, keywords, folders, and modified times. Ranking filters URL noise and combines strong structural signals with BM25-style term scoring. This gives fast results without an API key. Later versions can add optional local embeddings, Ollama embeddings, or OpenAI API embeddings while keeping the default workflow simple.
+Memory Map uses note titles, tags, links, backlinks, headings, keywords, folders, modified times, URL-noise filtering, and BM25-style term scoring.
 
 Memory Map data is saved locally in the vault:
 
@@ -164,59 +166,62 @@ Available commands:
 - `Codexian: Build Memory Map`
 - `Codexian: Find related notes for current note`
 
-## Release Workflow
-
-This repository includes a GitHub Actions workflow that builds and uploads BRAT assets when a tag matching the manifest version is pushed, for example:
-
-```bash
-git tag 0.1.0
-git push origin 0.1.0
-```
-
 ## Configuration
 
 Open Obsidian Settings → Community plugins → Codexian.
 
 - Set `Codex CLI path` only if auto-detection fails.
-- Codexian auto-detects common macOS, Windows, Homebrew, npm, and NVM Codex paths and can store the detected path for you.
-- Add `PATH` under environment variables only if Obsidian cannot find `codex`, `npm`, or `omx`.
+- Add `PATH` under environment variables only if Obsidian cannot find `codex`, `npm`, `git`, or `omx`.
 - Choose your Codex model and reasoning effort.
-- Run diagnostics before using the one-click OMX installer.
-- Keep `Review` permission mode until you trust the current vault workflow.
+- Use `Review` permission mode until you trust the current vault workflow.
+- Configure the media folder for generated visual assets.
 
-## Visual Generation
+## Development
 
-Use the command **Generate visual asset from active note** or the sidebar button.
+```bash
+npm install
+npm run build
+```
 
-Codexian can generate:
+Manual install for local development:
 
-- Infographics
-- Posters
-- Cartoons
-- Concept art
-- Diagram-like illustrations
+```text
+<vault>/.obsidian/plugins/codexian/
+  main.js
+  manifest.json
+  styles.css
+```
 
-Codexian first asks Codex CLI to analyze the note and draft an image-generation prompt. You can review and edit that prompt. It then either asks Codex CLI built-in image generation to create a PNG or asks Codex CLI to create a text-safe SVG. The generated visual is saved to the configured media folder and inserted at the top of the active note as an Obsidian embed.
+Then enable **Codexian** in Obsidian settings.
 
-This is intentionally not an OpenAI Images API integration. Codexian is designed to work from your Codex CLI subscription/login without requiring separate API billing.
+## Release Workflow
+
+This repository includes a GitHub Actions workflow that builds and uploads BRAT assets when a tag matching the manifest version is pushed.
+
+Example:
+
+```bash
+git tag 0.2.15
+git push origin 0.2.15
+```
 
 ## Security Notes
 
 - Review mode is the safest default.
+- Auto mode maps to Codex full-auto behavior.
 - Yolo mode maps to Codex's dangerous bypass mode and should only be used in trusted, backed-up vaults.
-- The OMX installer shows command previews and logs setup output.
+- One-click installers show command previews and log setup output.
+- Visual generation edits the current note only after the asset file exists.
 
 ## Project Status
 
-This project is in early MVP development. The current implementation prioritizes a working Obsidian plugin foundation:
+Codexian is in active MVP development. Current focus areas:
 
-- Codex CLI execution is implemented behind a provider boundary.
-- Codex-powered SVG visual asset generation is implemented without API keys.
-- ObsidianCode-style chat UI and note context chips are implemented.
-- Active-note, pinned-note, hotkey attach, and dismissible note context are implemented.
-- Memory Map local indexing and related-note recommendations are implemented.
-- OMX diagnostics and install/update UI are implemented.
-- Local embeddings, deeper tool-call rendering, diff previews, and long-term conversation persistence are planned.
+- Better Codex CLI parity with interactive slash commands.
+- More robust visual generation workflows.
+- Optional embedding-based Memory Map ranking.
+- Deeper tool-call rendering and diff previews.
+- Long-term conversation persistence.
 
 ## Credits
 
