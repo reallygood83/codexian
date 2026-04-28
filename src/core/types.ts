@@ -82,7 +82,7 @@ export interface AgentProvider {
 
 export const DEFAULT_SETTINGS: CodexianSettings = {
   codexCliPath: '',
-  codexModel: 'gpt-5.4',
+  codexModel: 'gpt-5.5',
   reasoningEffort: 'high',
   permissionMode: 'review',
   autoIncludeActiveNote: true,

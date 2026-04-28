@@ -15,7 +15,7 @@ Codexian is a desktop-only Obsidian plugin that brings OpenAI Codex into your va
 
 ## Current Release
 
-Latest BRAT release: **0.2.11**
+Latest BRAT release: **0.2.12**
 
 Install with:
 
@@ -45,6 +45,7 @@ Core chat works through your authenticated Codex CLI session. Codexian does **no
 - **Visible Codex progress**: Important Codex CLI status lines are shown while the final answer is being generated.
 - **Vault working directory**: Codex runs with the vault as its working root.
 - **Permission modes**: Review, Auto, and Yolo modes map to Codex sandbox behavior.
+- **Current Codex model selector**: Includes `gpt-5.5` plus fallback Codex models, while settings still allow manual model entry.
 - **No API key for core use**: Codexian uses your authenticated Codex CLI session, like ObsidianCode uses Claude Code CLI.
 - **Codex visual assets**: Generate PNG or SVG infographics, posters, cartoons, concept-art boards, or diagram-like illustrations from note context.
 - **Codex built-in PNG generation**: Use Codex CLI `image_generation` to generate real PNG images, then embed them into the note.

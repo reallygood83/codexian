@@ -63,7 +63,7 @@ export class CodexianSettingsTab extends PluginSettingTab {
       .addText((text) => text
         .setValue(this.plugin.settings.codexModel)
         .onChange(async (value) => {
-          this.plugin.settings.codexModel = value.trim() || 'gpt-5.4';
+          this.plugin.settings.codexModel = value.trim() || 'gpt-5.5';
           await this.plugin.saveSettings();
         }));
 

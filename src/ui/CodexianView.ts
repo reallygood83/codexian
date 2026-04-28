@@ -168,7 +168,7 @@ export class CodexianView extends ItemView {
     button.createSpan({ cls: 'oc-model-label', text: this.plugin.settings.codexModel });
 
     const dropdown = selector.createDiv({ cls: 'oc-model-dropdown' });
-    const models = ['gpt-5.4', 'gpt-5.4-mini', 'gpt-5.3-codex', 'gpt-5.3-codex-spark'];
+    const models = ['gpt-5.5', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.3-codex', 'gpt-5.3-codex-spark'];
     for (const model of models) {
       const option = dropdown.createDiv({ cls: 'oc-model-option' });
       if (model === this.plugin.settings.codexModel) option.addClass('selected');
