@@ -1,15 +1,17 @@
 import { Modal, Setting, type App } from 'obsidian';
 
-import type { ImageMode } from '../../core/types';
+import type { ImageMode, VisualOutputType } from '../../core/types';
 
 export interface ImageGenerationInput {
   mode: ImageMode;
+  outputType: VisualOutputType;
   prompt: string;
 }
 
 export class ImageGenerationModal extends Modal {
   private resolve: ((value: ImageGenerationInput | null) => void) | null = null;
   private mode: ImageMode = 'infographic';
+  private outputType: VisualOutputType = 'png';
   private prompt = '';
 
   constructor(app: App) {
@@ -28,8 +30,21 @@ export class ImageGenerationModal extends Modal {
     contentEl.empty();
     contentEl.createEl('h2', { text: 'Generate Codexian visual asset' });
     contentEl.createEl('p', {
-      text: 'Codexian will analyze the current note, draft an image prompt, generate an SVG with Codex CLI, and embed it at the top. No API key is used.',
+      text: 'Codexian will analyze the current note, draft an image prompt, generate a visual with Codex CLI, and embed it at the top. No API key is used.',
     });
+
+    new Setting(contentEl)
+      .setName('Output')
+      .setDesc('Choose Codex built-in PNG generation or text-safe SVG generation.')
+      .addDropdown((dropdown) => {
+        dropdown
+          .addOption('png', 'PNG via Codex image generation')
+          .addOption('svg', 'SVG via Codex code generation')
+          .setValue(this.outputType)
+          .onChange((value) => {
+            this.outputType = value as VisualOutputType;
+          });
+      });
 
     new Setting(contentEl)
       .setName('Format')
@@ -63,10 +78,10 @@ export class ImageGenerationModal extends Modal {
     new Setting(contentEl)
       .addButton((button) => {
         button
-          .setButtonText('Analyze note, generate SVG, and embed')
+          .setButtonText('Analyze note, generate, and embed')
           .setCta()
           .onClick(() => {
-            this.resolve?.({ mode: this.mode, prompt: this.prompt });
+            this.resolve?.({ mode: this.mode, outputType: this.outputType, prompt: this.prompt });
             this.resolve = null;
             this.close();
           });

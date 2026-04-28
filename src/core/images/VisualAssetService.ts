@@ -2,7 +2,7 @@ import * as path from 'path';
 import type { App, TFile } from 'obsidian';
 
 import type { CodexProvider } from '../agent/CodexProvider';
-import type { ImageMode } from '../types';
+import type { ImageMode, VisualOutputType } from '../types';
 import { buildImagePrompt, buildPromptDraftRequest } from './ImagePromptBuilder';
 
 function sanitizeName(input: string): string {
@@ -31,6 +31,7 @@ export interface GenerateVisualAssetRequest {
   file: TFile;
   mediaFolder: string;
   mode: ImageMode;
+  outputType: VisualOutputType;
   userPrompt: string;
   generatedPrompt?: string;
   noteContent: string;
@@ -49,7 +50,8 @@ export async function generateVisualAsset(request: GenerateVisualAssetRequest): 
   const normalizedFolder = folder.replace(/^\/+|\/+$/g, '');
   await ensureFolder(request.app, normalizedFolder);
 
-  const filename = `${sanitizeName(`${request.file.basename}-${request.mode}`)}-${Date.now()}.svg`;
+  const extension = request.outputType === 'png' ? 'png' : 'svg';
+  const filename = `${sanitizeName(`${request.file.basename}-${request.mode}`)}-${Date.now()}.${extension}`;
   const vaultRelativePath = path.posix.join(normalizedFolder, filename);
 
   const fallbackPrompt = buildImagePrompt({
@@ -61,7 +63,36 @@ export async function generateVisualAsset(request: GenerateVisualAssetRequest): 
   });
   const visualPrompt = request.generatedPrompt?.trim() || fallbackPrompt;
 
-  const prompt = [
+  const prompt = request.outputType === 'png'
+    ? buildPngGenerationPrompt(vaultRelativePath, visualPrompt)
+    : buildSvgGenerationPrompt(vaultRelativePath, visualPrompt);
+
+  let transcript = '';
+  request.onProgress?.(`Asking Codex CLI to create the ${extension.toUpperCase()}...`);
+  for await (const event of request.agent.query({
+    prompt,
+    cwd: request.vaultPath,
+    activeNotePath: request.file.path,
+    activeNoteContent: request.noteContent,
+    selectedText: request.selection,
+  })) {
+    if (event.type === 'text') transcript += event.content;
+    if (event.type === 'error') transcript += `\nERROR: ${event.content}`;
+  }
+
+  if (!(await request.app.vault.adapter.exists(vaultRelativePath))) {
+    request.onProgress?.(`${extension.toUpperCase()} file was not created at the expected path.`);
+    throw new Error(`Codex did not create the expected ${extension.toUpperCase()} file: ${vaultRelativePath}\n\n${transcript.trim()}`);
+  }
+
+  request.onProgress?.(`Embedding generated ${extension.toUpperCase()} at the top of the note...`);
+  await request.app.vault.process(request.file, (content) => embedAtTop(content, vaultRelativePath));
+  request.onProgress?.(`Visual embedded: ${vaultRelativePath}`);
+  return { path: vaultRelativePath, transcript: `Generated prompt:\n${visualPrompt}\n\n${transcript}` };
+}
+
+function buildSvgGenerationPrompt(vaultRelativePath: string, visualPrompt: string): string {
+  return [
     'Create a single SVG visual asset from the generated image prompt below.',
     '',
     `Target file path, relative to the vault root: ${vaultRelativePath}`,
@@ -80,34 +111,34 @@ export async function generateVisualAsset(request: GenerateVisualAssetRequest): 
     '',
     visualPrompt,
   ].join('\n');
+}
 
-  let transcript = '';
-  request.onProgress?.('Asking Codex CLI to create the SVG...');
-  for await (const event of request.agent.query({
-    prompt,
-    cwd: request.vaultPath,
-    activeNotePath: request.file.path,
-    activeNoteContent: request.noteContent,
-    selectedText: request.selection,
-  })) {
-    if (event.type === 'text') transcript += event.content;
-    if (event.type === 'error') transcript += `\nERROR: ${event.content}`;
-  }
-
-  if (!(await request.app.vault.adapter.exists(vaultRelativePath))) {
-    request.onProgress?.('SVG file was not created at the expected path.');
-    throw new Error(`Codex did not create the expected SVG file: ${vaultRelativePath}\n\n${transcript.trim()}`);
-  }
-
-  request.onProgress?.('Embedding generated SVG at the top of the note...');
-  await request.app.vault.process(request.file, (content) => embedAtTop(content, vaultRelativePath));
-  request.onProgress?.(`Visual embedded: ${vaultRelativePath}`);
-  return { path: vaultRelativePath, transcript: `Generated prompt:\n${visualPrompt}\n\n${transcript}` };
+function buildPngGenerationPrompt(vaultRelativePath: string, visualPrompt: string): string {
+  return [
+    'Create a single PNG image from the generated image prompt below.',
+    '',
+    `Final target file path, relative to the vault root: ${vaultRelativePath}`,
+    '',
+    'Hard requirements:',
+    '- Use Codex CLI built-in image generation tool only.',
+    '- Do not use Python, Pillow, SVG, HTML, canvas, diagrams-as-code, or any code-drawn substitute.',
+    '- Generate the image with the built-in image generation capability, then copy or move the resulting PNG from ~/.codex/generated_images/... to the final target file path.',
+    '- The final file must be a real PNG image at the target path.',
+    '- After saving, verify the file exists and is a PNG.',
+    '- If exact size control is unavailable, prefer a square high-resolution image and do not fake dimensions with code.',
+    '- For Korean text, keep labels very short, large, and high contrast. Avoid long paragraphs and tiny text.',
+    '- Do not modify the source note. Codexian will embed the PNG at the top after the file exists.',
+    '',
+    'Generated image prompt to apply:',
+    '',
+    visualPrompt,
+  ].join('\n');
 }
 
 export async function draftVisualPrompt(request: GenerateVisualAssetRequest): Promise<string> {
   const prompt = buildPromptDraftRequest({
     mode: request.mode,
+    outputType: request.outputType,
     userPrompt: request.userPrompt,
     noteTitle: request.file.basename,
     noteContent: request.noteContent,

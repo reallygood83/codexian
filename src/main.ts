@@ -312,6 +312,7 @@ export default class CodexianPlugin extends Plugin {
     progressModal.open();
     progressModal.addStep(`Source note: ${activeFile.path}`);
     progressModal.addStep(`Visual format: ${input.mode}`);
+    progressModal.addStep(`Output type: ${input.outputType.toUpperCase()}`);
 
     let activeProgressModal = progressModal;
     try {
@@ -324,6 +325,7 @@ export default class CodexianPlugin extends Plugin {
         file: activeFile,
         mediaFolder: this.settings.mediaFolder,
         mode: input.mode,
+        outputType: input.outputType,
         userPrompt: input.prompt,
         noteContent,
         selection: context.selection,
@@ -344,7 +346,7 @@ export default class CodexianPlugin extends Plugin {
       const generationProgressModal = new VisualGenerationProgressModal(this.app);
       activeProgressModal = generationProgressModal;
       generationProgressModal.open();
-      generationProgressModal.addStep('Generating SVG with reviewed prompt...');
+      generationProgressModal.addStep(`Generating ${input.outputType.toUpperCase()} with reviewed prompt...`);
       const generated = await generateVisualAsset({
         app: this.app,
         agent: this.agent,
@@ -352,6 +354,7 @@ export default class CodexianPlugin extends Plugin {
         file: activeFile,
         mediaFolder: this.settings.mediaFolder,
         mode: input.mode,
+        outputType: input.outputType,
         userPrompt: input.prompt,
         generatedPrompt: reviewedPrompt,
         noteContent,

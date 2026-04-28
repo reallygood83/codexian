@@ -1,4 +1,4 @@
-import type { ImageMode } from '../types';
+import type { ImageMode, VisualOutputType } from '../types';
 
 const MODE_DIRECTIVES: Record<ImageMode, string> = {
   infographic: 'Create a clean editorial infographic with strong hierarchy, compact labels, and visually distinct sections.',
@@ -40,14 +40,18 @@ export function buildImagePrompt(options: {
 
 export function buildPromptDraftRequest(options: {
   mode: ImageMode;
+  outputType: VisualOutputType;
   userPrompt: string;
   noteTitle?: string;
   noteContent?: string;
   selection?: string;
 }): string {
   const source = options.selection || options.noteContent || '';
+  const outputDescription = options.outputType === 'png'
+    ? 'a high-quality PNG image using Codex built-in image generation'
+    : 'one text-safe SVG visual asset';
   return [
-    'Analyze the provided Obsidian note and write a production-ready prompt for generating one SVG visual asset.',
+    `Analyze the provided Obsidian note and write a production-ready prompt for generating ${outputDescription}.`,
     '',
     'Output only the final image-generation prompt. Do not include commentary, markdown fences, or alternatives.',
     '',
@@ -57,7 +61,9 @@ export function buildPromptDraftRequest(options: {
     '- Recommended composition/layout',
     '- 3 to 7 concise Korean labels if labels are useful',
     '- Clear instruction to preserve Korean text legibility',
-    '- SVG-safe typography using Pretendard, Noto Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif',
+    options.outputType === 'svg'
+      ? '- SVG-safe typography using Pretendard, Noto Sans KR, Apple SD Gothic Neo, Malgun Gothic, sans-serif'
+      : '- Keep any Korean text short, large, high contrast, and easy to verify',
     '- Avoidance of tiny text, clutter, and garbled Korean',
     '',
     options.noteTitle ? `Note title: ${options.noteTitle}` : '',

@@ -1,6 +1,7 @@
 export type ReasoningEffort = 'low' | 'medium' | 'high' | 'xhigh';
 export type PermissionMode = 'review' | 'auto' | 'yolo';
 export type ImageMode = 'infographic' | 'poster' | 'cartoon' | 'concept' | 'diagram';
+export type VisualOutputType = 'png' | 'svg';
 
 export interface MemoryMapEntry {
   path: string;

@@ -15,7 +15,7 @@ Codexian is a desktop-only Obsidian plugin that brings OpenAI Codex into your va
 
 ## Current Release
 
-Latest BRAT release: **0.2.8**
+Latest BRAT release: **0.2.9**
 
 Install with:
 
@@ -47,6 +47,7 @@ Core chat works through your authenticated Codex CLI session. Codexian does **no
 - **Permission modes**: Review, Auto, and Yolo modes map to Codex sandbox behavior.
 - **No API key for core use**: Codexian uses your authenticated Codex CLI session, like ObsidianCode uses Claude Code CLI.
 - **Codex visual assets**: Generate SVG infographics, posters, cartoons, concept-art boards, or diagram-like illustrations from note context.
+- **Codex built-in PNG generation**: Use Codex CLI `image_generation` to generate real PNG images, then embed them into the note.
 - **Prompt-drafted visual generation**: Codexian analyzes the current note, drafts an image-generation prompt, then applies that prompt to create the SVG.
 - **Editable visual prompt preview**: Review and edit the generated image prompt before Codexian creates the SVG.
 - **Visual generation progress modal**: Image creation shows each step in a modal and writes progress/error messages to the console.
@@ -187,7 +188,7 @@ Codexian can generate:
 - Concept art
 - Diagram-like illustrations
 
-Codexian first asks Codex CLI to analyze the note and draft an image-generation prompt. It then asks Codex CLI to create the SVG from that generated prompt. The generated SVG is saved to the configured media folder and inserted at the top of the active note as an Obsidian embed.
+Codexian first asks Codex CLI to analyze the note and draft an image-generation prompt. You can review and edit that prompt. It then either asks Codex CLI built-in image generation to create a PNG or asks Codex CLI to create a text-safe SVG. The generated visual is saved to the configured media folder and inserted at the top of the active note as an Obsidian embed.
 
 This is intentionally not an OpenAI Images API integration. Codexian is designed to work from your Codex CLI subscription/login without requiring separate API billing.
 
