@@ -3,8 +3,9 @@ import { MarkdownView, Notice, Plugin, type TFile } from 'obsidian';
 import { CodexProvider } from './core/agent/CodexProvider';
 import { findCodexCli } from './core/codex/CodexCliResolver';
 import { generateVisualAsset } from './core/images/VisualAssetService';
+import { MemoryMapService } from './core/memory/MemoryMapService';
 import { buildProcessEnv } from './core/settings/env';
-import type { CodexianSettings } from './core/types';
+import type { CodexianSettings, MemoryMapResult } from './core/types';
 import { DEFAULT_SETTINGS } from './core/types';
 import { CodexianView, VIEW_TYPE_CODEXIAN } from './ui/CodexianView';
 import { ImageGenerationModal } from './ui/modals/ImageGenerationModal';
@@ -21,12 +22,14 @@ interface ActiveNoteContext {
 export default class CodexianPlugin extends Plugin {
   settings: CodexianSettings;
   agent: CodexProvider;
+  memoryMap: MemoryMapService;
   private lastActiveMarkdownFile: TFile | null = null;
 
   async onload(): Promise<void> {
     await this.loadSettings();
     await this.autofillCodexCliPath();
     this.agent = new CodexProvider(() => this.settings);
+    this.memoryMap = new MemoryMapService(this.app);
 
     this.registerView(VIEW_TYPE_CODEXIAN, (leaf) => new CodexianView(leaf, this));
 
@@ -55,6 +58,25 @@ export default class CodexianPlugin extends Plugin {
         if (checking) return true;
 
         void this.attachCurrentNoteToChat();
+        return true;
+      },
+    });
+
+    this.addCommand({
+      id: 'build-memory-map',
+      name: 'Build Memory Map',
+      callback: () => void this.buildMemoryMap(),
+    });
+
+    this.addCommand({
+      id: 'find-related-notes',
+      name: 'Find related notes for current note',
+      checkCallback: (checking: boolean) => {
+        const activeFile = this.getActiveMarkdownFile();
+        if (!activeFile) return false;
+        if (checking) return true;
+
+        void this.findRelatedNotes();
         return true;
       },
     });
@@ -199,6 +221,41 @@ export default class CodexianPlugin extends Plugin {
     await this.activateView();
     this.refreshOpenViews();
     new Notice(`Attached: ${activeFile.name}`);
+  }
+
+  async buildMemoryMap(): Promise<void> {
+    new Notice('Building Codexian Memory Map...');
+    try {
+      const index = await this.memoryMap.build();
+      this.refreshOpenViews();
+      new Notice(`Memory Map ready: ${index.entries.length} notes indexed.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      new Notice(`Memory Map failed: ${message}`);
+    }
+  }
+
+  async getMemoryMapStatus(): Promise<{ built: boolean; count: number; builtAt: number | null }> {
+    return this.memoryMap.getStatus();
+  }
+
+  async findRelatedNotes(limit = 8): Promise<MemoryMapResult[]> {
+    const activeFile = this.getActiveMarkdownFile();
+    if (!activeFile) {
+      new Notice('Open a markdown note before finding related notes.');
+      return [];
+    }
+
+    try {
+      const results = await this.memoryMap.findRelated(activeFile, limit);
+      this.refreshOpenViews();
+      if (results.length === 0) new Notice('No related notes found.');
+      return results;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      new Notice(`Find Context failed: ${message}`);
+      return [];
+    }
   }
 
   refreshOpenViews(): void {

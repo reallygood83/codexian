@@ -1,7 +1,7 @@
 import { ItemView, MarkdownRenderer, Notice, setIcon, type TFile, type WorkspaceLeaf } from 'obsidian';
 
 import type CodexianPlugin from '../main';
-import type { ConversationMessage, PermissionMode, ReasoningEffort } from '../core/types';
+import type { ConversationMessage, MemoryMapResult, PermissionMode, ReasoningEffort } from '../core/types';
 
 export const VIEW_TYPE_CODEXIAN = 'codexian-view';
 
@@ -14,10 +14,13 @@ export class CodexianView extends ItemView {
   private plugin: CodexianPlugin;
   private messagesEl: HTMLElement | null = null;
   private inputEl: HTMLTextAreaElement | null = null;
+  private memoryMapEl: HTMLElement | null = null;
   private fileIndicatorEl: HTMLElement | null = null;
   private selectionIndicatorEl: HTMLElement | null = null;
   private welcomeEl: HTMLElement | null = null;
   private messages: ConversationMessage[] = [];
+  private relatedNotes: MemoryMapResult[] = [];
+  private hiddenRelatedPaths = new Set<string>();
   private isRunning = false;
 
   constructor(leaf: WorkspaceLeaf, plugin: CodexianPlugin) {
@@ -53,7 +56,13 @@ export class CodexianView extends ItemView {
     this.buildInputArea(inputContainerEl);
 
     this.registerEvent(this.app.workspace.on('active-leaf-change', () => this.renderFileChips()));
-    this.registerEvent(this.app.workspace.on('file-open', () => this.renderFileChips()));
+    this.registerEvent(this.app.workspace.on('file-open', () => {
+      this.relatedNotes = [];
+      this.hiddenRelatedPaths.clear();
+      this.renderMemoryMapPanel();
+      this.renderFileChips();
+    }));
+    void this.renderMemoryMapPanel();
     this.renderFileChips();
   }
 
@@ -62,6 +71,7 @@ export class CodexianView extends ItemView {
   }
 
   refreshContextChips(): void {
+    void this.renderMemoryMapPanel();
     this.renderFileChips();
   }
 
@@ -98,6 +108,8 @@ export class CodexianView extends ItemView {
 
     this.selectionIndicatorEl = inputWrapper.createDiv({ cls: 'oc-selection-indicator' });
     this.selectionIndicatorEl.style.display = 'none';
+
+    this.memoryMapEl = inputWrapper.createDiv({ cls: 'oc-memory-map-panel' });
 
     this.fileIndicatorEl = inputWrapper.createDiv({ cls: 'oc-file-indicator' });
 
@@ -191,6 +203,77 @@ export class CodexianView extends ItemView {
     if (!this.welcomeEl) return;
     this.welcomeEl.empty();
     this.welcomeEl.createDiv({ cls: 'oc-welcome-greeting', text: 'How can I help you today?' });
+  }
+
+  private async renderMemoryMapPanel(): Promise<void> {
+    if (!this.memoryMapEl) return;
+    this.memoryMapEl.empty();
+
+    const status = await this.plugin.getMemoryMapStatus();
+    const header = this.memoryMapEl.createDiv({ cls: 'oc-memory-map-header' });
+    const title = header.createDiv({ cls: 'oc-memory-map-title' });
+    setIcon(title.createSpan({ cls: 'oc-memory-map-icon' }), 'network');
+    title.createSpan({ text: status.built ? `Memory Map · ${status.count} notes` : 'Memory Map not built' });
+
+    const actions = header.createDiv({ cls: 'oc-memory-map-actions' });
+    const buildBtn = actions.createEl('button', { cls: 'oc-memory-map-btn', text: status.built ? 'Rebuild' : 'Build Memory Map' });
+    buildBtn.addEventListener('click', async () => {
+      buildBtn.setText('Building...');
+      await this.plugin.buildMemoryMap();
+      await this.renderMemoryMapPanel();
+    });
+
+    const findBtn = actions.createEl('button', { cls: 'oc-memory-map-btn oc-memory-map-primary', text: 'Find Context' });
+    findBtn.disabled = !Boolean(this.plugin.getActiveMarkdownFile());
+    findBtn.addEventListener('click', async () => {
+      findBtn.setText('Finding...');
+      this.relatedNotes = await this.plugin.findRelatedNotes();
+      this.hiddenRelatedPaths.clear();
+      await this.renderMemoryMapPanel();
+    });
+
+    const visibleResults = this.relatedNotes.filter((result) => !this.hiddenRelatedPaths.has(result.path));
+    if (visibleResults.length === 0) {
+      const hint = this.memoryMapEl.createDiv({ cls: 'oc-memory-map-hint' });
+      hint.setText(status.built ? 'Click Find Context to recommend related notes.' : 'Build once, then find related notes from this vault.');
+      return;
+    }
+
+    const list = this.memoryMapEl.createDiv({ cls: 'oc-memory-map-results' });
+    for (const result of visibleResults) {
+      this.createRelatedNoteChip(list, result);
+    }
+  }
+
+  private createRelatedNoteChip(parent: HTMLElement, result: MemoryMapResult): void {
+    const chip = parent.createDiv({ cls: 'oc-memory-chip' });
+    chip.setAttribute('title', `${result.path}\n${result.reasons.join('\n')}`);
+    chip.addEventListener('click', () => void this.openNote(result.path));
+
+    const name = chip.createSpan({ cls: 'oc-memory-chip-name', text: result.title });
+    name.setAttribute('title', result.path);
+    chip.createSpan({ cls: 'oc-memory-chip-reason', text: result.reasons[0] || `score ${result.score}` });
+
+    const add = chip.createSpan({ cls: 'oc-memory-chip-action' });
+    setIcon(add, 'plus');
+    add.setAttribute('aria-label', 'Add note to Codexian context');
+    add.setAttribute('title', 'Add to context');
+    add.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      await this.plugin.pinNote(result.path);
+      this.renderFileChips();
+      new Notice(`Added context: ${result.title}`);
+    });
+
+    const hide = chip.createSpan({ cls: 'oc-memory-chip-action' });
+    setIcon(hide, 'x');
+    hide.setAttribute('aria-label', 'Hide recommendation');
+    hide.setAttribute('title', 'Hide this recommendation');
+    hide.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      this.hiddenRelatedPaths.add(result.path);
+      await this.renderMemoryMapPanel();
+    });
   }
 
   private renderFileChips(): void {

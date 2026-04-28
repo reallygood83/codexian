@@ -2,6 +2,30 @@ export type ReasoningEffort = 'low' | 'medium' | 'high' | 'xhigh';
 export type PermissionMode = 'review' | 'auto' | 'yolo';
 export type ImageMode = 'infographic' | 'poster' | 'cartoon' | 'concept' | 'diagram';
 
+export interface MemoryMapEntry {
+  path: string;
+  title: string;
+  folder: string;
+  tags: string[];
+  links: string[];
+  headings: string[];
+  keywords: string[];
+  mtime: number;
+}
+
+export interface MemoryMapIndex {
+  version: 1;
+  builtAt: number;
+  entries: MemoryMapEntry[];
+}
+
+export interface MemoryMapResult {
+  path: string;
+  title: string;
+  score: number;
+  reasons: string[];
+}
+
 export interface CodexianSettings {
   codexCliPath: string;
   codexModel: string;

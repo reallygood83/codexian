@@ -1880,6 +1880,141 @@
   padding: 4px 6px 6px 6px;
 }
 
+/* Memory Map */
+.oc-memory-map-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 6px 0 8px 0;
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.oc-memory-map-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.oc-memory-map-title {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
+  color: var(--text-muted);
+  font-size: 12px;
+}
+
+.oc-memory-map-icon {
+  display: flex;
+  align-items: center;
+  color: var(--interactive-accent);
+}
+
+.oc-memory-map-icon svg {
+  width: 13px;
+  height: 13px;
+}
+
+.oc-memory-map-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.oc-memory-map-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 10px;
+  background: var(--background-primary);
+  color: var(--text-muted);
+  font-size: 11px;
+  line-height: 18px;
+  cursor: pointer;
+}
+
+.oc-memory-map-btn:hover {
+  background: var(--background-modifier-hover);
+  color: var(--text-normal);
+}
+
+.oc-memory-map-btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.oc-memory-map-primary {
+  border-color: var(--interactive-accent);
+  color: var(--interactive-accent);
+}
+
+.oc-memory-map-hint {
+  color: var(--text-faint);
+  font-size: 11px;
+}
+
+.oc-memory-map-results {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.oc-memory-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  max-width: 240px;
+  padding: 3px 5px 3px 8px;
+  border: 1px solid color-mix(in srgb, var(--interactive-accent) 40%, var(--background-modifier-border));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.oc-memory-chip:hover {
+  background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
+.oc-memory-chip-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-normal);
+}
+
+.oc-memory-chip-reason {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--text-faint);
+  font-size: 10px;
+  max-width: 80px;
+}
+
+.oc-memory-chip-action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+
+.oc-memory-chip-action svg {
+  width: 12px;
+  height: 12px;
+}
+
+.oc-memory-chip-action:hover {
+  background: var(--background-modifier-hover);
+  color: var(--interactive-accent);
+}
+
 /* File indicator (attached files) */
 .oc-file-indicator {
   display: none;
@@ -2012,6 +2147,7 @@
   border-color: #60a5fa !important;
   box-shadow: 0 0 0 1px #60a5fa;
 }
+
 
 /* ============================================
    components/context-footer.css

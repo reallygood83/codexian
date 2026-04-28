@@ -15,7 +15,7 @@ Codexian is a desktop-only Obsidian plugin that brings OpenAI Codex into your va
 
 ## Current Release
 
-Latest BRAT release: **0.1.9**
+Latest BRAT release: **0.2.0**
 
 Install with:
 
@@ -31,6 +31,8 @@ Core chat works through your authenticated Codex CLI session. Codexian does **no
 - **Current-note context**: Active note content and selected text are automatically attached to prompts.
 - **Pinned note context**: Pin important notes so they stay attached even when you switch files.
 - **Dismissible note context**: Use the `x` button on a note chip when you want to work without that note being sent to Codex.
+- **Memory Map**: Build a local vault index and use **Find Context** to recommend related notes from the current note.
+- **Related note chips**: Add recommended notes to Codexian context with `+`, hide noisy recommendations with `x`, or click a chip to open the note.
 - **Stable note chips**: Current-note chips stay visible when the sidebar takes focus, matching ObsidianCode behavior.
 - **Attach current note command**: Use Obsidian's hotkey settings to bind `Codexian: Attach current note to chat`.
 - **Fast composer UX**: Press Enter to send, or Shift+Enter for a new line.
@@ -120,11 +122,11 @@ Codexian is designed to make Obsidian notes feel native inside Codex CLI:
 - Run `Codexian: Attach current note to chat` from Obsidian commands or bind it to a hotkey.
 - Ask Codex normally; Codexian sends the selected note context through Codex CLI.
 
-## Planned: Memory Map
+## Memory Map
 
-The next major feature direction is **Codexian Memory Map**: a one-button way to find relevant notes in your vault.
+**Codexian Memory Map** is a one-button way to find relevant notes in your vault.
 
-Planned user flow:
+User flow:
 
 1. Click **Build Memory Map** once to index the vault locally.
 2. Open any note.
@@ -132,7 +134,18 @@ Planned user flow:
 4. Codexian recommends related notes with clear reasons.
 5. Add useful notes to the chat context with `+`.
 
-The first version will use a local rule-based index of note titles, tags, links, backlinks, headings, keywords, folders, and modified times. This gives fast results without an API key. Later versions can add optional local embeddings, Ollama embeddings, or OpenAI API embeddings while keeping the default workflow simple.
+The first version uses a local rule-based index of note titles, tags, links, backlinks, headings, keywords, folders, and modified times. This gives fast results without an API key. Later versions can add optional local embeddings, Ollama embeddings, or OpenAI API embeddings while keeping the default workflow simple.
+
+Memory Map data is saved locally in the vault:
+
+```text
+.codexian/memory/index.json
+```
+
+Available commands:
+
+- `Codexian: Build Memory Map`
+- `Codexian: Find related notes for current note`
 
 ## Release Workflow
 
@@ -184,8 +197,9 @@ This project is in early MVP development. The current implementation prioritizes
 - Codex-powered SVG visual asset generation is implemented without API keys.
 - ObsidianCode-style chat UI and note context chips are implemented.
 - Active-note, pinned-note, hotkey attach, and dismissible note context are implemented.
+- Memory Map local indexing and related-note recommendations are implemented.
 - OMX diagnostics and install/update UI are implemented.
-- Memory Map, deeper tool-call rendering, diff previews, and long-term conversation persistence are planned.
+- Local embeddings, deeper tool-call rendering, diff previews, and long-term conversation persistence are planned.
 
 ## Credits
 
