@@ -15,7 +15,7 @@ Codexian is a desktop-only Obsidian plugin that brings OpenAI Codex into your va
 
 ## Current Release
 
-Latest BRAT release: **0.2.4**
+Latest BRAT release: **0.2.5**
 
 Install with:
 
@@ -36,6 +36,7 @@ Core chat works through your authenticated Codex CLI session. Codexian does **no
 - **Clear recommendation reasons**: Hover a Memory Map recommendation to see why it was selected.
 - **Improved local ranking**: Memory Map filters URL noise and uses weighted title/tag/link/heading signals plus BM25-style term scoring.
 - **Collapsible Memory Map**: Fold the section when you do not need it, and clear all Find Context results at once.
+- **Obsidian appearance-aware text**: Chat messages and composer text follow your Obsidian text font, size, and line height settings.
 - **Stable note chips**: Current-note chips stay visible when the sidebar takes focus, matching ObsidianCode behavior.
 - **Attach current note command**: Use Obsidian's hotkey settings to bind `Codexian: Attach current note to chat`.
 - **Fast composer UX**: Press Enter to send, or Shift+Enter for a new line.

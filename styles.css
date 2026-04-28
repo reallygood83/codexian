@@ -11,6 +11,7 @@
   height: 100%;
   padding: 0;
   overflow: hidden;
+  font-family: var(--font-interface);
 }
 
 
@@ -375,6 +376,9 @@
   border-radius: 8px;
   max-width: 95%;
   word-wrap: break-word;
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  line-height: var(--line-height-normal);
 }
 
 .oc-message-user {
@@ -406,7 +410,9 @@
 
 /* Message content */
 .oc-message-content {
-  line-height: 1.5;
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  line-height: var(--line-height-normal);
   user-select: text;
   -webkit-user-select: text;
 }
@@ -464,6 +470,7 @@
 .oc-messages::-webkit-scrollbar-thumb:hover {
   background: var(--background-modifier-border-hover);
 }
+
 
 /* ============================================
    components/code.css
@@ -1854,9 +1861,9 @@
   border-radius: 6px;
   background: transparent !important;
   color: var(--text-normal);
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.4;
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  line-height: var(--line-height-normal);
   box-shadow: none !important;
 }
 

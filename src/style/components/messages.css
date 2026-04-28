@@ -39,6 +39,9 @@
   border-radius: 8px;
   max-width: 95%;
   word-wrap: break-word;
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  line-height: var(--line-height-normal);
 }
 
 .oc-message-user {
@@ -70,7 +73,9 @@
 
 /* Message content */
 .oc-message-content {
-  line-height: 1.5;
+  font-family: var(--font-text);
+  font-size: var(--font-text-size);
+  line-height: var(--line-height-normal);
   user-select: text;
   -webkit-user-select: text;
 }
