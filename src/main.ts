@@ -45,6 +45,19 @@ export default class CodexianPlugin extends Plugin {
       callback: () => void this.generateImageFromActiveNote(),
     });
 
+    this.addCommand({
+      id: 'attach-current-note',
+      name: 'Attach current note to chat',
+      checkCallback: (checking: boolean) => {
+        const activeFile = this.getActiveMarkdownFile();
+        if (!activeFile) return false;
+        if (checking) return true;
+
+        void this.attachCurrentNoteToChat();
+        return true;
+      },
+    });
+
     this.addSettingTab(new CodexianSettingsTab(this));
   }
 
@@ -145,6 +158,28 @@ export default class CodexianPlugin extends Plugin {
     if (!this.settings.pinnedNotePaths.includes(path)) {
       this.settings.pinnedNotePaths.push(path);
       await this.saveSettings();
+    }
+  }
+
+  async attachCurrentNoteToChat(): Promise<void> {
+    const activeFile = this.getActiveMarkdownFile();
+    if (!activeFile) {
+      new Notice('Open a markdown note before attaching it.');
+      return;
+    }
+
+    await this.pinNote(activeFile.path.replace(/\\/g, '/'));
+    await this.activateView();
+    this.refreshOpenViews();
+    new Notice(`Attached: ${activeFile.name}`);
+  }
+
+  refreshOpenViews(): void {
+    for (const leaf of this.app.workspace.getLeavesOfType(VIEW_TYPE_CODEXIAN)) {
+      const view = leaf.view;
+      if (view instanceof CodexianView) {
+        view.refreshContextChips();
+      }
     }
   }
 

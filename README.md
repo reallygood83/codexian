@@ -18,6 +18,7 @@ Codexian is a desktop-only Obsidian plugin that brings OpenAI Codex into your va
 - **Codex sidebar**: Ask Codex to work with your vault from an Obsidian-native chat panel.
 - **Current-note context**: Active note content and selected text are automatically attached to prompts.
 - **Pinned note context**: Pin important notes so they stay attached even when you switch files.
+- **Attach current note command**: Use Obsidian's hotkey settings to bind `Codexian: Attach current note to chat`.
 - **Fast composer UX**: Press Enter to send, or Shift+Enter for a new line.
 - **ObsidianCode legacy UI**: The chat shell, message bubbles, input box, toolbar, note chips, and stylesheet are carried from ObsidianCode's `.oc-*` legacy.
 - **Clean Codex replies**: Codexian reads Codex's final response from `--output-last-message` so session headers, hooks, and token logs stay out of the chat.

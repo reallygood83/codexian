@@ -61,6 +61,10 @@ export class CodexianView extends ItemView {
     this.plugin.agent.cancel();
   }
 
+  refreshContextChips(): void {
+    this.renderFileChips();
+  }
+
   private buildHeader(header: HTMLElement): void {
     const titleContainer = header.createDiv({ cls: 'oc-title' });
     const logoEl = titleContainer.createSpan({ cls: 'oc-logo' });
