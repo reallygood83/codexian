@@ -15,7 +15,7 @@ Codexian is a desktop-only Obsidian plugin that brings OpenAI Codex into your va
 
 ## Current Release
 
-Latest BRAT release: **0.2.6**
+Latest BRAT release: **0.2.7**
 
 Install with:
 
@@ -48,6 +48,7 @@ Core chat works through your authenticated Codex CLI session. Codexian does **no
 - **No API key for core use**: Codexian uses your authenticated Codex CLI session, like ObsidianCode uses Claude Code CLI.
 - **Codex visual assets**: Generate SVG infographics, posters, cartoons, concept-art boards, or diagram-like illustrations from note context.
 - **Prompt-drafted visual generation**: Codexian analyzes the current note, drafts an image-generation prompt, then applies that prompt to create the SVG.
+- **Visual generation progress modal**: Image creation shows each step in a modal and writes progress/error messages to the console.
 - **Automatic top embedding**: Generated SVG files are saved into the configured attachment folder and embedded at the top of the active note with `![[...]]`.
 - **Korean-safe SVG guidance**: Visual generation prompts include Korean font fallbacks and instructions to avoid garbled Korean labels.
 - **oh-my-codex setup**: Settings include diagnostics and an install/update flow for Codex CLI plus OMX.

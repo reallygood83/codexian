@@ -9,6 +9,7 @@ import type { CodexianSettings, MemoryMapResult } from './core/types';
 import { DEFAULT_SETTINGS } from './core/types';
 import { CodexianView, VIEW_TYPE_CODEXIAN } from './ui/CodexianView';
 import { ImageGenerationModal } from './ui/modals/ImageGenerationModal';
+import { VisualGenerationProgressModal } from './ui/modals/VisualGenerationProgressModal';
 import { CodexianSettingsTab } from './ui/settings/CodexianSettingsTab';
 
 interface ActiveNoteContext {
@@ -305,7 +306,11 @@ export default class CodexianPlugin extends Plugin {
     const input = await new ImageGenerationModal(this.app).openAndWait();
     if (!input) return;
 
-    new Notice('Generating visual asset with Codex...');
+    const progressModal = new VisualGenerationProgressModal(this.app);
+    progressModal.open();
+    progressModal.addStep(`Source note: ${activeFile.path}`);
+    progressModal.addStep(`Visual format: ${input.mode}`);
+
     try {
       const generated = await generateVisualAsset({
         app: this.app,
@@ -317,11 +322,15 @@ export default class CodexianPlugin extends Plugin {
         userPrompt: input.prompt,
         noteContent: context.content || await this.app.vault.read(activeFile),
         selection: context.selection,
+        onProgress: (message) => progressModal.addStep(message),
       });
 
+      progressModal.finish(`Done. Embedded ${generated.path}`, 'success');
       new Notice(`Visual embedded: ${generated.path}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
+      progressModal.finish(`Error: ${message}`, 'error');
+      console.error('[Codexian visual] Visual generation failed:', error);
       new Notice(`Visual generation failed: ${message}`);
     }
   }

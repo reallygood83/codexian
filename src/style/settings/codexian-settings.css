@@ -27,3 +27,44 @@
 .oc-send-btn {
   margin-left: 4px;
 }
+
+.codexian-visual-progress-status {
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: var(--background-secondary);
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.codexian-visual-progress-status.is-success {
+  color: var(--text-success);
+}
+
+.codexian-visual-progress-status.is-error {
+  color: var(--text-error);
+}
+
+.codexian-visual-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.codexian-visual-progress-item {
+  padding: 6px 8px;
+  border-left: 2px solid var(--background-modifier-border);
+  color: var(--text-muted);
+  font-size: var(--font-ui-small);
+}
+
+.codexian-visual-progress-item.is-success {
+  border-left-color: var(--text-success);
+  color: var(--text-success);
+}
+
+.codexian-visual-progress-item.is-error {
+  border-left-color: var(--text-error);
+  color: var(--text-error);
+}

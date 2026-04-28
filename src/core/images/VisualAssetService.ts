@@ -34,6 +34,7 @@ export interface GenerateVisualAssetRequest {
   userPrompt: string;
   noteContent: string;
   selection?: string;
+  onProgress?: (message: string) => void;
 }
 
 export interface GeneratedVisualAsset {
@@ -42,6 +43,7 @@ export interface GeneratedVisualAsset {
 }
 
 export async function generateVisualAsset(request: GenerateVisualAssetRequest): Promise<GeneratedVisualAsset> {
+  request.onProgress?.('Preparing attachment folder...');
   const folder = request.mediaFolder.trim() || 'attachments/codexian';
   const normalizedFolder = folder.replace(/^\/+|\/+$/g, '');
   await ensureFolder(request.app, normalizedFolder);
@@ -56,8 +58,10 @@ export async function generateVisualAsset(request: GenerateVisualAssetRequest): 
     noteContent: request.noteContent,
     selection: request.selection,
   });
+  request.onProgress?.('Analyzing note and drafting image prompt...');
   const draftedPrompt = await draftVisualPrompt(request);
   const visualPrompt = draftedPrompt || fallbackPrompt;
+  request.onProgress?.(draftedPrompt ? 'Image prompt drafted from note.' : 'Using fallback image prompt.');
 
   const prompt = [
     'Create a single SVG visual asset from the generated image prompt below.',
@@ -80,6 +84,7 @@ export async function generateVisualAsset(request: GenerateVisualAssetRequest): 
   ].join('\n');
 
   let transcript = '';
+  request.onProgress?.('Asking Codex CLI to create the SVG...');
   for await (const event of request.agent.query({
     prompt,
     cwd: request.vaultPath,
@@ -92,10 +97,13 @@ export async function generateVisualAsset(request: GenerateVisualAssetRequest): 
   }
 
   if (!(await request.app.vault.adapter.exists(vaultRelativePath))) {
+    request.onProgress?.('SVG file was not created at the expected path.');
     throw new Error(`Codex did not create the expected SVG file: ${vaultRelativePath}\n\n${transcript.trim()}`);
   }
 
+  request.onProgress?.('Embedding generated SVG at the top of the note...');
   await request.app.vault.process(request.file, (content) => embedAtTop(content, vaultRelativePath));
+  request.onProgress?.(`Visual embedded: ${vaultRelativePath}`);
   return { path: vaultRelativePath, transcript: `Generated prompt:\n${visualPrompt}\n\n${transcript}` };
 }
 
@@ -117,6 +125,10 @@ async function draftVisualPrompt(request: GenerateVisualAssetRequest): Promise<s
     selectedText: request.selection,
   })) {
     if (event.type === 'text') drafted += event.content;
+    if (event.type === 'error') {
+      request.onProgress?.(`Prompt draft warning: ${event.content}`);
+      console.warn('[Codexian visual] Prompt draft warning:', event.content);
+    }
   }
 
   return drafted.trim();
