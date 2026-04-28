@@ -251,12 +251,24 @@ export class CodexianView extends ItemView {
 
   private createRelatedNoteChip(parent: HTMLElement, result: MemoryMapResult): void {
     const chip = parent.createDiv({ cls: 'oc-memory-chip' });
-    chip.setAttribute('title', `${result.path}\n${result.reasons.join('\n')}`);
     chip.addEventListener('click', () => void this.openNote(result.path));
 
     const name = chip.createSpan({ cls: 'oc-memory-chip-name', text: result.title });
     name.setAttribute('title', result.path);
     chip.createSpan({ cls: 'oc-memory-chip-reason', text: result.reasons[0] || `score ${result.score}` });
+
+    const tooltip = chip.createDiv({ cls: 'oc-memory-chip-tooltip' });
+    tooltip.createDiv({ cls: 'oc-memory-tooltip-title', text: result.title });
+    tooltip.createDiv({ cls: 'oc-memory-tooltip-path', text: result.path });
+    const reasons = tooltip.createDiv({ cls: 'oc-memory-tooltip-reasons' });
+    if (result.reasons.length > 0) {
+      for (const reason of result.reasons) {
+        reasons.createDiv({ cls: 'oc-memory-tooltip-reason', text: reason });
+      }
+    } else {
+      reasons.createDiv({ cls: 'oc-memory-tooltip-reason', text: '규칙 기반 점수로 추천됨' });
+    }
+    tooltip.createDiv({ cls: 'oc-memory-tooltip-score', text: `Relevance score ${result.score}` });
 
     const add = chip.createSpan({ cls: 'oc-memory-chip-action' });
     setIcon(add, 'plus');
