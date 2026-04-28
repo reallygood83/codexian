@@ -586,6 +586,77 @@
   font-style: normal;
 }
 
+.oc-progress-timeline {
+  margin: 4px 0 10px 0;
+  padding: 8px 10px;
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--background-secondary) 78%, transparent);
+}
+
+.oc-progress-timeline.is-complete {
+  opacity: 0.82;
+}
+
+.oc-progress-timeline.is-error {
+  border-color: var(--text-error);
+}
+
+.oc-progress-header {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  color: var(--text-normal);
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+.oc-progress-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #D97757;
+  box-shadow: 0 0 0 4px color-mix(in srgb, #D97757 22%, transparent);
+  animation: thinking-pulse 1.5s ease-in-out infinite;
+}
+
+.oc-progress-timeline.is-complete .oc-progress-dot {
+  background: var(--color-green);
+  box-shadow: none;
+  animation: none;
+}
+
+.oc-progress-timeline.is-error .oc-progress-dot {
+  background: var(--text-error);
+  box-shadow: none;
+  animation: none;
+}
+
+.oc-progress-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  max-height: 220px;
+  overflow-y: auto;
+  padding-left: 12px;
+  border-left: 2px solid var(--background-modifier-border);
+}
+
+.oc-progress-step {
+  color: var(--text-muted);
+  font-family: var(--font-monospace);
+  font-size: 11px;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+}
+
+.oc-progress-step::before {
+  content: "•";
+  color: #D97757;
+  margin-right: 6px;
+}
+
 /* Thinking block (extended thinking) */
 .oc-thinking-block {
   margin: 8px 0;

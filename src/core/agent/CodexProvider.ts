@@ -190,6 +190,8 @@ export class CodexProvider implements AgentProvider {
     const cleaned = line.replace(/\u001b\[[0-9;?]*[ -/]*[@-~]/g, '').trim();
     if (!cleaned) return '';
     if (/^user$/i.test(cleaned) || /^codex$/i.test(cleaned)) return '';
+    if (/^[┌└├│─╭╰]/.test(cleaned)) return '';
+    if (/^(•|-) /i.test(cleaned)) return cleaned.slice(0, 240);
     if (/^tokens used\b/i.test(cleaned)) return cleaned;
     if (/^OpenAI Codex\b/i.test(cleaned)) return cleaned;
     if (/^workdir:/i.test(cleaned)) return cleaned;
@@ -199,7 +201,10 @@ export class CodexProvider implements AgentProvider {
     if (/^session id:/i.test(cleaned)) return cleaned;
     if (/^hook:/i.test(cleaned)) return cleaned;
     if (/\bERROR\b/.test(cleaned)) return cleaned;
-    if (/^(read|write|edit|apply|patch|search|run|exec|open|thinking|reasoning|update|create|delete|move)\b/i.test(cleaned)) return cleaned;
+    if (/^(read|write|edit|apply|patch|search|run|exec|open|thinking|reasoning|update|create|delete|move|list|find|scan|inspect|build|test|verify|commit|tag|push|install|copy|generate|embed)\b/i.test(cleaned)) return cleaned.slice(0, 240);
+    if (/^(reading|writing|editing|applying|searching|running|executing|opening|creating|deleting|moving|listing|finding|scanning|inspecting|building|testing|verifying|committing|tagging|pushing|installing|copying|generating|embedding)\b/i.test(cleaned)) return cleaned.slice(0, 240);
+    if (/^(rg|sed|cat|ls|git|npm|node|tsc|mkdir|cp|mv|python|python3|gh|codex)\b/i.test(cleaned)) return cleaned.slice(0, 240);
+    if (/^[A-Za-z0-9_./~-]+\.(ts|tsx|js|jsx|css|json|md|svg|png|yml|yaml):?\d*/.test(cleaned)) return cleaned.slice(0, 240);
     return '';
   }
 

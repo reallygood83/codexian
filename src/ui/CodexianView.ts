@@ -545,9 +545,9 @@ export class CodexianView extends ItemView {
       const context = await this.plugin.getActiveNoteContext();
       let assistantBuffer = '';
       const assistantEl = this.createMessageEl('assistant');
-      const progressEl = assistantEl.createDiv({ cls: 'oc-thinking' });
-      progressEl.createSpan({ text: 'Codex is working' });
-      const progressHintEl = progressEl.createSpan({ text: ' · starting...', cls: 'oc-thinking-hint' });
+      const progressEl = this.createProgressTimeline(assistantEl);
+      const progressListEl = progressEl.querySelector('.oc-progress-list') as HTMLElement;
+      this.appendProgressStep(progressListEl, 'Codex process started');
       const contentEl = assistantEl.createDiv({ cls: 'oc-message-content' });
 
       for await (const event of this.plugin.agent.query({
@@ -560,17 +560,19 @@ export class CodexianView extends ItemView {
       })) {
         if (event.type === 'text') {
           assistantBuffer += event.content;
-          progressEl.remove();
+          progressEl.addClass('is-complete');
+          this.appendProgressStep(progressListEl, 'Final response received');
           await this.renderMarkdown(assistantBuffer, contentEl);
         } else if (event.type === 'progress') {
-          progressHintEl.setText(` · ${event.content}`);
+          this.appendProgressStep(progressListEl, event.content);
         } else if (event.type === 'error') {
-          progressEl.remove();
+          progressEl.addClass('is-error');
+          this.appendProgressStep(progressListEl, `Error: ${event.content}`);
           this.appendMessage({ role: 'error', content: event.content, timestamp: Date.now() });
         }
       }
 
-      progressEl.remove();
+      progressEl.addClass('is-complete');
 
       if (assistantBuffer.trim()) {
         this.messages.push({ role: 'assistant', content: assistantBuffer, timestamp: Date.now() });
@@ -608,6 +610,28 @@ export class CodexianView extends ItemView {
     const el = this.messagesEl!.createDiv({ cls: className });
     this.messagesEl!.scrollTop = this.messagesEl!.scrollHeight;
     return el;
+  }
+
+  private createProgressTimeline(parent: HTMLElement): HTMLElement {
+    const wrapper = parent.createDiv({ cls: 'oc-progress-timeline' });
+    const header = wrapper.createDiv({ cls: 'oc-progress-header' });
+    header.createSpan({ cls: 'oc-progress-dot' });
+    header.createSpan({ cls: 'oc-progress-title', text: 'Codex working steps' });
+    wrapper.createDiv({ cls: 'oc-progress-list' });
+    return wrapper;
+  }
+
+  private appendProgressStep(listEl: HTMLElement, message: string): void {
+    const previous = listEl.lastElementChild;
+    if (previous?.textContent === message) return;
+    const item = listEl.createDiv({ cls: 'oc-progress-step' });
+    item.setText(message);
+    const maxItems = 24;
+    while (listEl.children.length > maxItems) {
+      listEl.firstElementChild?.remove();
+    }
+    item.scrollIntoView({ block: 'nearest' });
+    if (this.messagesEl) this.messagesEl.scrollTop = this.messagesEl.scrollHeight;
   }
 
   private async renderMarkdown(markdown: string, el: HTMLElement): Promise<void> {

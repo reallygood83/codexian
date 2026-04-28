@@ -17,7 +17,7 @@ Core chat and visual generation are routed through Codex CLI. Codexian does **no
 
 ## Current Release
 
-Latest BRAT release: **0.2.15**
+Latest BRAT release: **0.2.16**
 
 Install with:
 
@@ -31,7 +31,7 @@ https://github.com/reallygood83/codexian
 - **Automatic note context**: The active note, selected text, and pinned notes can be sent to Codex automatically.
 - **Pinned and dismissible note chips**: Pin important notes with `+` or remove noisy notes with `x`.
 - **Memory Map**: Build a local vault index, find related notes, and add them to context with clear hover reasons.
-- **Visible Codex progress**: Codex CLI progress lines are shown while the final answer is being generated.
+- **Visible Codex work timeline**: Codex CLI progress lines are shown as a step-by-step timeline while the final answer is being generated.
 - **Slash command menu**: Type `/` to open a scrollable Codex-style command menu.
 - **Model selector**: Includes `gpt-5.5`, `gpt-5.4`, and fallback Codex model options. Settings still allow manual model IDs.
 - **Permission modes**: Review, Auto, and Yolo map to Codex sandbox behavior.
