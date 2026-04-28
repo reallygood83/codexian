@@ -15,7 +15,7 @@ Codexian is a desktop-only Obsidian plugin that brings OpenAI Codex into your va
 
 ## Current Release
 
-Latest BRAT release: **0.2.14**
+Latest BRAT release: **0.2.15**
 
 Install with:
 
@@ -57,6 +57,7 @@ Core chat works through your authenticated Codex CLI session. Codexian does **no
 - **Properties-safe embedding**: Visual embeds are inserted below YAML properties/frontmatter so note properties stay valid.
 - **Korean-safe SVG guidance**: Visual generation prompts include Korean font fallbacks and instructions to avoid garbled Korean labels.
 - **One-click Codex update**: Settings can update Codex CLI and enable `image_generation` for PNG visual assets.
+- **One-click Obsidian Skills setup**: Settings can install or update [`kepano/obsidian-skills`](https://github.com/kepano/obsidian-skills) into `~/.codex/skills` for Codex CLI.
 - **Slash command menu**: Type `/` in the composer to see scrollable Codex-style command suggestions; slash prompts are sent raw instead of being wrapped with note context.
 - **oh-my-codex setup**: Settings include diagnostics and an install/update flow for Codex CLI plus OMX.
 - **macOS and Windows aware**: CLI detection, diagnostics, and command previews adapt by platform.

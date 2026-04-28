@@ -8,6 +8,8 @@ import {
   enableCodexImageGeneration,
   getCodexUpdatePreview,
   getInstallPreview,
+  getObsidianSkillsPreview,
+  installOrUpdateObsidianSkills,
   installOrUpdateOmx,
   updateCodexCli,
 } from '../../core/installer/OmxInstaller';
@@ -166,6 +168,19 @@ export class CodexianSettingsTab extends PluginSettingTab {
       .addButton((button) => button
         .setButtonText('Enable image generation')
         .onClick(() => void this.enableImageGeneration()));
+
+    const skillsCard = containerEl.createDiv({ cls: 'codexian-settings-card' });
+    skillsCard.createEl('h3', { text: 'Obsidian Skills' });
+    skillsCard.createEl('p', {
+      text: 'Install or update kepano/obsidian-skills for Codex CLI. These skills teach Codex Obsidian Markdown, Bases, Canvas, and CLI workflows.',
+    });
+    skillsCard.createEl('pre', { cls: 'codexian-status-line', text: getObsidianSkillsPreview() });
+
+    new Setting(skillsCard)
+      .addButton((button) => button
+        .setButtonText('Install / update Obsidian Skills')
+        .setCta()
+        .onClick(() => void this.installObsidianSkills()));
   }
 
   private async runDiagnostics(): Promise<void> {
@@ -223,6 +238,21 @@ export class CodexianSettingsTab extends PluginSettingTab {
       const message = error instanceof Error ? error.message : String(error);
       this.diagnosticsEl.appendText(`\nFAILED: ${message}`);
       new Notice(`Codex image_generation setup failed: ${message}`);
+    }
+  }
+
+  private async installObsidianSkills(): Promise<void> {
+    if (!this.diagnosticsEl) return;
+    this.diagnosticsEl.setText('Installing Obsidian Skills...\n');
+    try {
+      await installOrUpdateObsidianSkills(this.plugin.settings.environmentVariables, (line) => {
+        this.diagnosticsEl?.appendText(line);
+      });
+      new Notice('Obsidian Skills installed. Restart Codexian sessions to load them.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      this.diagnosticsEl.appendText(`\nFAILED: ${message}`);
+      new Notice(`Obsidian Skills setup failed: ${message}`);
     }
   }
 }
