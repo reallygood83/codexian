@@ -22,6 +22,7 @@ export class CodexianView extends ItemView {
   private relatedNotes: MemoryMapResult[] = [];
   private hiddenRelatedPaths = new Set<string>();
   private memoryMapRenderToken = 0;
+  private isMemoryMapExpanded = true;
   private isRunning = false;
 
   constructor(leaf: WorkspaceLeaf, plugin: CodexianPlugin) {
@@ -214,12 +215,29 @@ export class CodexianView extends ItemView {
     if (renderToken !== this.memoryMapRenderToken || !this.memoryMapEl) return;
 
     this.memoryMapEl.empty();
+    this.memoryMapEl.toggleClass('is-collapsed', !this.isMemoryMapExpanded);
     const header = this.memoryMapEl.createDiv({ cls: 'oc-memory-map-header' });
     const title = header.createDiv({ cls: 'oc-memory-map-title' });
+    title.setAttribute('role', 'button');
+    title.setAttribute('aria-expanded', String(this.isMemoryMapExpanded));
+    title.addEventListener('click', async () => {
+      this.isMemoryMapExpanded = !this.isMemoryMapExpanded;
+      await this.renderMemoryMapPanel();
+    });
+    setIcon(title.createSpan({ cls: 'oc-memory-map-toggle' }), this.isMemoryMapExpanded ? 'chevron-down' : 'chevron-right');
     setIcon(title.createSpan({ cls: 'oc-memory-map-icon' }), 'network');
     title.createSpan({ text: status.built ? `Memory Map · ${status.count} notes` : 'Memory Map not built' });
 
     const actions = header.createDiv({ cls: 'oc-memory-map-actions' });
+    if (this.relatedNotes.length > 0) {
+      const clearBtn = actions.createEl('button', { cls: 'oc-memory-map-btn', text: 'Clear' });
+      clearBtn.addEventListener('click', async () => {
+        this.relatedNotes = [];
+        this.hiddenRelatedPaths.clear();
+        await this.renderMemoryMapPanel();
+      });
+    }
+
     const buildBtn = actions.createEl('button', { cls: 'oc-memory-map-btn', text: status.built ? 'Rebuild' : 'Build Memory Map' });
     buildBtn.addEventListener('click', async () => {
       buildBtn.setText('Building...');
@@ -233,8 +251,11 @@ export class CodexianView extends ItemView {
       findBtn.setText('Finding...');
       this.relatedNotes = await this.plugin.findRelatedNotes();
       this.hiddenRelatedPaths.clear();
+      this.isMemoryMapExpanded = true;
       await this.renderMemoryMapPanel();
     });
+
+    if (!this.isMemoryMapExpanded) return;
 
     const visibleResults = this.relatedNotes.filter((result) => !this.hiddenRelatedPaths.has(result.path));
     if (visibleResults.length === 0) {

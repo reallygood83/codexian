@@ -1,7 +1,7 @@
 {
   "id": "codexian",
   "name": "Codexian",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "minAppVersion": "1.5.0",
   "description": "Run OpenAI Codex in your Obsidian vault, generate SVG visuals from notes, and set up oh-my-codex.",
   "author": "reallygood83",

@@ -88,6 +88,23 @@
   min-width: 0;
   color: var(--text-muted);
   font-size: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.oc-memory-map-title:hover {
+  color: var(--text-normal);
+}
+
+.oc-memory-map-toggle {
+  display: flex;
+  align-items: center;
+  color: var(--text-faint);
+}
+
+.oc-memory-map-toggle svg {
+  width: 12px;
+  height: 12px;
 }
 
 .oc-memory-map-icon {
