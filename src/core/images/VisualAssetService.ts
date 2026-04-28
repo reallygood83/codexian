@@ -167,5 +167,15 @@ export async function draftVisualPrompt(request: GenerateVisualAssetRequest): Pr
 function embedAtTop(content: string, vaultRelativePath: string): string {
   const embed = `![[${vaultRelativePath}]]`;
   if (content.includes(embed)) return content;
+  if (content.startsWith('---\n')) {
+    const frontmatterEnd = content.indexOf('\n---', 4);
+    if (frontmatterEnd !== -1) {
+      const closingEnd = frontmatterEnd + '\n---'.length;
+      const hasTrailingNewline = content.slice(closingEnd).startsWith('\n');
+      const before = content.slice(0, closingEnd);
+      const after = content.slice(closingEnd + (hasTrailingNewline ? 1 : 0));
+      return `${before}\n\n${embed}\n\n${after}`;
+    }
+  }
   return `${embed}\n\n${content}`;
 }

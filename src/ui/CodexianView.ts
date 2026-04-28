@@ -10,6 +10,17 @@ const CODEXIAN_LOGO = {
   path: 'M12 2.8a4.2 4.2 0 0 1 3.64 2.1 4.2 4.2 0 0 1 5.56 5.56A4.2 4.2 0 0 1 19.1 14.1a4.2 4.2 0 0 1-5.56 5.56A4.2 4.2 0 0 1 9.9 21.2a4.2 4.2 0 0 1-5.56-5.56A4.2 4.2 0 0 1 2.8 12a4.2 4.2 0 0 1 2.1-3.64A4.2 4.2 0 0 1 10.46 2.8 4.4 4.4 0 0 1 12 2.8Zm0 2.1a2.1 2.1 0 0 0-1.05.28L7.32 7.27a2.1 2.1 0 0 0-1.05 1.82v4.18a2.1 2.1 0 0 0 1.05 1.82l3.63 2.09a2.1 2.1 0 0 0 2.1 0l3.63-2.09a2.1 2.1 0 0 0 1.05-1.82V9.09a2.1 2.1 0 0 0-1.05-1.82l-3.63-2.09A2.1 2.1 0 0 0 12 4.9Zm0 3.1 3.46 2v4L12 16l-3.46-2v-4L12 8Z',
 };
 
+const CODEX_SLASH_COMMANDS = [
+  { name: '/help', hint: 'Show Codex CLI help', description: 'Ask Codex CLI for available commands and usage.' },
+  { name: '/init', hint: 'Create AGENTS.md', description: 'Initialize repository/vault instructions for Codex.' },
+  { name: '/status', hint: 'Show session status', description: 'Ask Codex for current model, workdir, sandbox, and session state.' },
+  { name: '/model', hint: 'Change model', description: 'Open or request Codex model selection if supported by the CLI surface.' },
+  { name: '/approvals', hint: 'Approval mode', description: 'Open or request approval/sandbox mode selection if supported.' },
+  { name: '/compact', hint: 'Compact context', description: 'Ask Codex to compact the current conversation context.' },
+  { name: '/diff', hint: 'Review changes', description: 'Ask Codex to summarize current git/worktree changes.' },
+  { name: '/clear', hint: 'Clear context', description: 'Ask Codex to clear or reset the active conversation context.' },
+];
+
 export class CodexianView extends ItemView {
   private plugin: CodexianPlugin;
   private messagesEl: HTMLElement | null = null;
@@ -17,6 +28,7 @@ export class CodexianView extends ItemView {
   private memoryMapEl: HTMLElement | null = null;
   private fileIndicatorEl: HTMLElement | null = null;
   private selectionIndicatorEl: HTMLElement | null = null;
+  private slashDropdownEl: HTMLElement | null = null;
   private welcomeEl: HTMLElement | null = null;
   private messages: ConversationMessage[] = [];
   private relatedNotes: MemoryMapResult[] = [];
@@ -24,6 +36,7 @@ export class CodexianView extends ItemView {
   private memoryMapRenderToken = 0;
   private isMemoryMapExpanded = true;
   private isRunning = false;
+  private selectedSlashCommandIndex = 0;
 
   constructor(leaf: WorkspaceLeaf, plugin: CodexianPlugin) {
     super(leaf);
@@ -123,12 +136,21 @@ export class CodexianView extends ItemView {
       },
     });
     this.inputEl.addEventListener('keydown', (event) => {
+      if (this.handleSlashKeydown(event)) return;
       if (event.key === 'Enter' && !event.shiftKey) {
         event.preventDefault();
         void this.submit();
       }
     });
-    this.inputEl.addEventListener('input', () => this.autoResizeInput());
+    this.inputEl.addEventListener('input', () => {
+      this.autoResizeInput();
+      this.renderSlashCommands();
+    });
+    this.inputEl.addEventListener('blur', () => {
+      window.setTimeout(() => this.hideSlashCommands(), 120);
+    });
+
+    this.slashDropdownEl = inputWrapper.createDiv({ cls: 'oc-slash-dropdown' });
 
     const toolbar = inputWrapper.createDiv({ cls: 'oc-input-toolbar' });
     this.buildModelSelector(toolbar);
@@ -401,6 +423,98 @@ export class CodexianView extends ItemView {
     if (!this.inputEl) return;
     this.inputEl.style.height = 'auto';
     this.inputEl.style.height = `${Math.min(this.inputEl.scrollHeight, 200)}px`;
+  }
+
+  private handleSlashKeydown(event: KeyboardEvent): boolean {
+    if (!this.slashDropdownEl?.hasClass('visible')) return false;
+
+    if (event.key === 'ArrowDown') {
+      event.preventDefault();
+      this.selectedSlashCommandIndex = Math.min(this.selectedSlashCommandIndex + 1, this.getFilteredSlashCommands().length - 1);
+      this.renderSlashCommands();
+      return true;
+    }
+
+    if (event.key === 'ArrowUp') {
+      event.preventDefault();
+      this.selectedSlashCommandIndex = Math.max(this.selectedSlashCommandIndex - 1, 0);
+      this.renderSlashCommands();
+      return true;
+    }
+
+    if (event.key === 'Tab' || event.key === 'Enter') {
+      const command = this.getFilteredSlashCommands()[this.selectedSlashCommandIndex];
+      if (command) {
+        event.preventDefault();
+        this.insertSlashCommand(command.name);
+        return true;
+      }
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.hideSlashCommands();
+      return true;
+    }
+
+    return false;
+  }
+
+  private getSlashQuery(): string | null {
+    if (!this.inputEl) return null;
+    const value = this.inputEl.value;
+    const cursor = this.inputEl.selectionStart ?? value.length;
+    const beforeCursor = value.slice(0, cursor);
+    if (!beforeCursor.startsWith('/')) return null;
+    if (beforeCursor.includes('\n')) return null;
+    if (beforeCursor.includes(' ')) return null;
+    return beforeCursor.toLowerCase();
+  }
+
+  private getFilteredSlashCommands(): typeof CODEX_SLASH_COMMANDS {
+    const query = this.getSlashQuery();
+    if (query === null) return [];
+    return CODEX_SLASH_COMMANDS.filter((command) => command.name.startsWith(query));
+  }
+
+  private renderSlashCommands(): void {
+    if (!this.slashDropdownEl) return;
+    const commands = this.getFilteredSlashCommands();
+    this.slashDropdownEl.empty();
+
+    if (commands.length === 0) {
+      this.hideSlashCommands();
+      return;
+    }
+
+    this.selectedSlashCommandIndex = Math.min(this.selectedSlashCommandIndex, commands.length - 1);
+    this.slashDropdownEl.addClass('visible');
+
+    for (const [index, command] of commands.entries()) {
+      const item = this.slashDropdownEl.createDiv({ cls: 'oc-slash-item' });
+      if (index === this.selectedSlashCommandIndex) item.addClass('selected');
+      item.createSpan({ cls: 'oc-slash-name', text: command.name });
+      item.createSpan({ cls: 'oc-slash-hint', text: command.hint });
+      item.createDiv({ cls: 'oc-slash-desc', text: command.description });
+      item.addEventListener('mousedown', (event) => {
+        event.preventDefault();
+        this.insertSlashCommand(command.name);
+      });
+    }
+  }
+
+  private insertSlashCommand(command: string): void {
+    if (!this.inputEl) return;
+    this.inputEl.value = `${command} `;
+    this.inputEl.focus();
+    this.inputEl.setSelectionRange(this.inputEl.value.length, this.inputEl.value.length);
+    this.autoResizeInput();
+    this.hideSlashCommands();
+  }
+
+  private hideSlashCommands(): void {
+    this.slashDropdownEl?.removeClass('visible');
+    this.selectedSlashCommandIndex = 0;
   }
 
   private async submit(): Promise<void> {
