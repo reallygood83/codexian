@@ -2,7 +2,8 @@ import { MarkdownView, Notice, Plugin, type TFile } from 'obsidian';
 
 import { CodexProvider } from './core/agent/CodexProvider';
 import { findCodexCli } from './core/codex/CodexCliResolver';
-import { generateVisualAsset } from './core/images/VisualAssetService';
+import { draftVisualPrompt, generateVisualAsset } from './core/images/VisualAssetService';
+import { buildImagePrompt } from './core/images/ImagePromptBuilder';
 import { MemoryMapService } from './core/memory/MemoryMapService';
 import { buildProcessEnv } from './core/settings/env';
 import type { CodexianSettings, MemoryMapResult } from './core/types';
@@ -10,6 +11,7 @@ import { DEFAULT_SETTINGS } from './core/types';
 import { CodexianView, VIEW_TYPE_CODEXIAN } from './ui/CodexianView';
 import { ImageGenerationModal } from './ui/modals/ImageGenerationModal';
 import { VisualGenerationProgressModal } from './ui/modals/VisualGenerationProgressModal';
+import { VisualPromptPreviewModal } from './ui/modals/VisualPromptPreviewModal';
 import { CodexianSettingsTab } from './ui/settings/CodexianSettingsTab';
 
 interface ActiveNoteContext {
@@ -311,7 +313,38 @@ export default class CodexianPlugin extends Plugin {
     progressModal.addStep(`Source note: ${activeFile.path}`);
     progressModal.addStep(`Visual format: ${input.mode}`);
 
+    let activeProgressModal = progressModal;
     try {
+      const noteContent = context.content || await this.app.vault.read(activeFile);
+      progressModal.addStep('Analyzing note and drafting image prompt...');
+      const draftedPrompt = await draftVisualPrompt({
+        app: this.app,
+        agent: this.agent,
+        vaultPath: this.getVaultPath(),
+        file: activeFile,
+        mediaFolder: this.settings.mediaFolder,
+        mode: input.mode,
+        userPrompt: input.prompt,
+        noteContent,
+        selection: context.selection,
+        onProgress: (message) => progressModal.addStep(message),
+      });
+      progressModal.close();
+
+      const promptForReview = draftedPrompt || buildImagePrompt({
+        mode: input.mode,
+        userPrompt: input.prompt,
+        noteTitle: activeFile.basename,
+        noteContent,
+        selection: context.selection,
+      });
+      const reviewedPrompt = await new VisualPromptPreviewModal(this.app, promptForReview).openAndWait();
+      if (!reviewedPrompt) return;
+
+      const generationProgressModal = new VisualGenerationProgressModal(this.app);
+      activeProgressModal = generationProgressModal;
+      generationProgressModal.open();
+      generationProgressModal.addStep('Generating SVG with reviewed prompt...');
       const generated = await generateVisualAsset({
         app: this.app,
         agent: this.agent,
@@ -320,16 +353,17 @@ export default class CodexianPlugin extends Plugin {
         mediaFolder: this.settings.mediaFolder,
         mode: input.mode,
         userPrompt: input.prompt,
-        noteContent: context.content || await this.app.vault.read(activeFile),
+        generatedPrompt: reviewedPrompt,
+        noteContent,
         selection: context.selection,
-        onProgress: (message) => progressModal.addStep(message),
+        onProgress: (message) => generationProgressModal.addStep(message),
       });
 
-      progressModal.finish(`Done. Embedded ${generated.path}`, 'success');
+      generationProgressModal.finish(`Done. Embedded ${generated.path}`, 'success');
       new Notice(`Visual embedded: ${generated.path}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
-      progressModal.finish(`Error: ${message}`, 'error');
+      activeProgressModal.finish(`Error: ${message}`, 'error');
       console.error('[Codexian visual] Visual generation failed:', error);
       new Notice(`Visual generation failed: ${message}`);
     }

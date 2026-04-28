@@ -32,6 +32,7 @@ export interface GenerateVisualAssetRequest {
   mediaFolder: string;
   mode: ImageMode;
   userPrompt: string;
+  generatedPrompt?: string;
   noteContent: string;
   selection?: string;
   onProgress?: (message: string) => void;
@@ -58,10 +59,7 @@ export async function generateVisualAsset(request: GenerateVisualAssetRequest): 
     noteContent: request.noteContent,
     selection: request.selection,
   });
-  request.onProgress?.('Analyzing note and drafting image prompt...');
-  const draftedPrompt = await draftVisualPrompt(request);
-  const visualPrompt = draftedPrompt || fallbackPrompt;
-  request.onProgress?.(draftedPrompt ? 'Image prompt drafted from note.' : 'Using fallback image prompt.');
+  const visualPrompt = request.generatedPrompt?.trim() || fallbackPrompt;
 
   const prompt = [
     'Create a single SVG visual asset from the generated image prompt below.',
@@ -107,7 +105,7 @@ export async function generateVisualAsset(request: GenerateVisualAssetRequest): 
   return { path: vaultRelativePath, transcript: `Generated prompt:\n${visualPrompt}\n\n${transcript}` };
 }
 
-async function draftVisualPrompt(request: GenerateVisualAssetRequest): Promise<string> {
+export async function draftVisualPrompt(request: GenerateVisualAssetRequest): Promise<string> {
   const prompt = buildPromptDraftRequest({
     mode: request.mode,
     userPrompt: request.userPrompt,
