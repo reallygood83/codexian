@@ -73,6 +73,7 @@ export default class CodexianPlugin extends Plugin {
       ...DEFAULT_SETTINGS,
       ...data,
       pinnedNotePaths: Array.isArray(data?.pinnedNotePaths) ? data.pinnedNotePaths : DEFAULT_SETTINGS.pinnedNotePaths,
+      excludedNotePaths: Array.isArray(data?.excludedNotePaths) ? data.excludedNotePaths : DEFAULT_SETTINGS.excludedNotePaths,
       omx: {
         ...DEFAULT_SETTINGS.omx,
         ...data?.omx,
@@ -117,12 +118,19 @@ export default class CodexianPlugin extends Plugin {
 
   async getActiveNoteContext(): Promise<ActiveNoteContext | null> {
     const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-    const file = markdownView?.file;
-    if (!file && this.settings.pinnedNotePaths.length === 0) return null;
-
-    const content = file && this.settings.autoIncludeActiveNote ? await this.app.vault.read(file) : '';
-    const selection = markdownView?.editor?.getSelection()?.trim() || undefined;
+    const file = this.getActiveMarkdownFile();
+    const includeActiveFile = Boolean(
+      file
+      && this.settings.autoIncludeActiveNote
+      && !this.isNoteExcluded(file.path),
+    );
     const pinnedNotes = await this.getPinnedNoteContents(file?.path);
+    if (!file && pinnedNotes.length === 0) return null;
+
+    const content = file && includeActiveFile ? await this.app.vault.read(file) : '';
+    const selection = includeActiveFile && markdownView?.file?.path === file?.path
+      ? markdownView?.editor?.getSelection()?.trim() || undefined
+      : undefined;
     return {
       file: file!,
       path: file?.path || '',
@@ -136,6 +144,7 @@ export default class CodexianPlugin extends Plugin {
     const notes: Array<{ path: string; content: string }> = [];
     for (const notePath of this.settings.pinnedNotePaths) {
       if (notePath === excludePath) continue;
+      if (this.isNoteExcluded(notePath)) continue;
       const file = this.app.vault.getAbstractFileByPath(notePath);
       if (!file || !('extension' in file)) continue;
       try {
@@ -161,11 +170,18 @@ export default class CodexianPlugin extends Plugin {
   }
 
   isNotePinned(path: string): boolean {
-    return this.settings.pinnedNotePaths.includes(path);
+    const normalizedPath = path.replace(/\\/g, '/');
+    return this.settings.pinnedNotePaths.includes(normalizedPath);
+  }
+
+  isNoteExcluded(path: string): boolean {
+    const normalizedPath = path.replace(/\\/g, '/');
+    return this.settings.excludedNotePaths.includes(normalizedPath);
   }
 
   async pinNote(path: string): Promise<void> {
     const normalizedPath = path.replace(/\\/g, '/');
+    await this.includeNote(normalizedPath);
     if (!this.settings.pinnedNotePaths.includes(normalizedPath)) {
       this.settings.pinnedNotePaths.push(normalizedPath);
       await this.saveSettings();
@@ -199,6 +215,24 @@ export default class CodexianPlugin extends Plugin {
     const next = this.settings.pinnedNotePaths.filter((item) => item !== normalizedPath);
     if (next.length !== this.settings.pinnedNotePaths.length) {
       this.settings.pinnedNotePaths = next;
+      await this.saveSettings();
+    }
+  }
+
+  async excludeNote(path: string): Promise<void> {
+    const normalizedPath = path.replace(/\\/g, '/');
+    this.settings.pinnedNotePaths = this.settings.pinnedNotePaths.filter((item) => item !== normalizedPath);
+    if (!this.settings.excludedNotePaths.includes(normalizedPath)) {
+      this.settings.excludedNotePaths.push(normalizedPath);
+    }
+    await this.saveSettings();
+  }
+
+  async includeNote(path: string): Promise<void> {
+    const normalizedPath = path.replace(/\\/g, '/');
+    const next = this.settings.excludedNotePaths.filter((item) => item !== normalizedPath);
+    if (next.length !== this.settings.excludedNotePaths.length) {
+      this.settings.excludedNotePaths = next;
       await this.saveSettings();
     }
   }

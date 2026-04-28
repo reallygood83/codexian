@@ -198,7 +198,7 @@ export class CodexianView extends ItemView {
     this.fileIndicatorEl.empty();
 
     const activeFile = this.plugin.getActiveMarkdownFile();
-    if (activeFile) {
+    if (activeFile && !this.plugin.isNoteExcluded(activeFile.path)) {
       this.createFileChip(activeFile.path, {
         current: this.plugin.settings.autoIncludeActiveNote,
         pinned: this.plugin.isNotePinned(activeFile.path),
@@ -207,6 +207,7 @@ export class CodexianView extends ItemView {
 
     for (const pinnedPath of this.plugin.settings.pinnedNotePaths) {
       if (pinnedPath === activeFile?.path) continue;
+      if (this.plugin.isNoteExcluded(pinnedPath)) continue;
       this.createFileChip(pinnedPath, { pinned: true });
     }
 
@@ -240,6 +241,16 @@ export class CodexianView extends ItemView {
       event.stopPropagation();
       if (this.plugin.isNotePinned(filePath)) await this.plugin.unpinNote(filePath);
       else await this.plugin.pinNote(filePath);
+      this.renderFileChips();
+    });
+
+    const remove = chip.createSpan({ cls: 'oc-file-chip-remove' });
+    setIcon(remove, 'x');
+    remove.setAttribute('aria-label', 'Remove note from Codexian context');
+    remove.setAttribute('title', 'Remove this note from the chat context');
+    remove.addEventListener('click', async (event) => {
+      event.stopPropagation();
+      await this.plugin.excludeNote(filePath);
       this.renderFileChips();
     });
 

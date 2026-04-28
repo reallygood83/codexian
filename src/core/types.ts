@@ -9,6 +9,7 @@ export interface CodexianSettings {
   permissionMode: PermissionMode;
   autoIncludeActiveNote: boolean;
   pinnedNotePaths: string[];
+  excludedNotePaths: string[];
   environmentVariables: string;
   mediaFolder: string;
   omx: {
@@ -58,6 +59,7 @@ export const DEFAULT_SETTINGS: CodexianSettings = {
   permissionMode: 'review',
   autoIncludeActiveNote: true,
   pinnedNotePaths: [],
+  excludedNotePaths: [],
   environmentVariables: '',
   mediaFolder: 'attachments/codexian',
   omx: {
