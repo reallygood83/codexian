@@ -176,18 +176,22 @@ export class CodexianView extends ItemView {
   private buildModelSelector(parent: HTMLElement): void {
     const selector = parent.createDiv({ cls: 'oc-model-selector' });
     const button = selector.createDiv({ cls: 'oc-model-btn' });
-    button.createSpan({ cls: 'oc-model-label', text: this.plugin.settings.codexModel });
+    const label = button.createSpan({ cls: 'oc-model-label', text: this.plugin.settings.codexModel });
 
     const dropdown = selector.createDiv({ cls: 'oc-model-dropdown' });
     const models = ['gpt-5.5', 'gpt-5.4', 'gpt-5.4-mini', 'gpt-5.3-codex', 'gpt-5.3-codex-spark'];
+    const options: HTMLElement[] = [];
     for (const model of models) {
       const option = dropdown.createDiv({ cls: 'oc-model-option' });
+      options.push(option);
       if (model === this.plugin.settings.codexModel) option.addClass('selected');
       option.createSpan({ text: model });
       option.addEventListener('click', async () => {
         this.plugin.settings.codexModel = model;
         await this.plugin.saveSettings();
-        this.reopen();
+        label.setText(model);
+        for (const item of options) item.removeClass('selected');
+        option.addClass('selected');
       });
     }
   }
@@ -196,16 +200,20 @@ export class CodexianView extends ItemView {
     const selector = parent.createDiv({ cls: 'oc-thinking-selector' });
     selector.createSpan({ cls: 'oc-thinking-label-text', text: 'Thinking:' });
     const gears = selector.createDiv({ cls: 'oc-thinking-gears' });
-    gears.createDiv({ cls: 'oc-thinking-current', text: this.plugin.settings.reasoningEffort });
+    const current = gears.createDiv({ cls: 'oc-thinking-current', text: this.plugin.settings.reasoningEffort });
     const options = gears.createDiv({ cls: 'oc-thinking-options' });
     const efforts: ReasoningEffort[] = ['low', 'medium', 'high', 'xhigh'];
+    const items: HTMLElement[] = [];
     for (const effort of efforts) {
       const option = options.createDiv({ cls: 'oc-thinking-gear', text: effort });
+      items.push(option);
       if (effort === this.plugin.settings.reasoningEffort) option.addClass('selected');
       option.addEventListener('click', async () => {
         this.plugin.settings.reasoningEffort = effort;
         await this.plugin.saveSettings();
-        this.reopen();
+        current.setText(effort);
+        for (const item of items) item.removeClass('selected');
+        option.addClass('selected');
       });
     }
   }

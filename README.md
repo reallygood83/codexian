@@ -17,7 +17,7 @@ Core chat and visual generation are routed through Codex CLI. Codexian does **no
 
 ## Current Release
 
-Latest BRAT release: **0.2.17**
+Latest BRAT release: **0.2.18**
 
 Install with:
 
@@ -34,6 +34,7 @@ https://github.com/reallygood83/codexian
 - **Visible Codex work timeline**: Codex CLI progress lines are shown as a step-by-step timeline while the final answer is being generated.
 - **Slash command menu**: Type `/` to open a scrollable Codex-style command menu.
 - **Model selector**: Includes `gpt-5.5`, `gpt-5.4`, and fallback Codex model options. Settings still allow manual model IDs.
+- **Windows-aware Codex launch**: Avoids known `codex.cmd` spawn issues by running the Codex Node entrypoint directly when needed.
 - **Permission modes**: Review, Auto, and Yolo map to Codex sandbox behavior.
 - **Obsidian appearance-aware text**: Chat and composer text follow your Obsidian font, size, and line-height settings.
 
@@ -107,7 +108,12 @@ omx setup
 omx doctor
 ```
 
-On Windows, use PowerShell. If advanced OMX team runtime features are unstable natively, WSL remains a practical fallback.
+Platform notes:
+
+- **macOS**: Codexian auto-detects Homebrew, npm, and NVM Codex paths such as `/opt/homebrew/bin/codex`.
+- **Windows**: Codexian auto-detects npm paths such as `%APPDATA%\npm\codex.cmd`. When this `.cmd` wrapper causes Node spawn issues, Codexian runs the underlying `@openai/codex/bin/codex.js` entrypoint through `node`.
+- **Windows PowerShell**: Recommended for manual setup commands.
+- **Windows WSL**: Still a practical fallback for advanced OMX/team workflows if native Windows terminal tooling is unstable.
 
 ## Installing With BRAT
 
@@ -173,6 +179,8 @@ Open Obsidian Settings → Community plugins → Codexian.
 
 - Set `Codex CLI path` only if auto-detection fails.
 - Add `PATH` under environment variables only if Obsidian cannot find `codex`, `npm`, `git`, or `omx`.
+- On Windows, `Codex CLI path` may point to `codex.cmd`; Codexian will internally prefer the matching `codex.js` entrypoint when available.
+- On macOS/Linux, Codexian keeps the normal executable path and does not use the Windows `.cmd` workaround.
 - Choose your Codex model and reasoning effort.
 - Use `Review` permission mode until you trust the current vault workflow.
 - Configure the media folder for generated visual assets.

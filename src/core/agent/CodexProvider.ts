@@ -49,7 +49,6 @@ export class CodexProvider implements AgentProvider {
       settings.codexModel,
       '--config',
       `model_reasoning_effort="${settings.reasoningEffort}"`,
-      '-',
     ];
 
     if (settings.permissionMode === 'yolo') {
@@ -60,7 +59,8 @@ export class CodexProvider implements AgentProvider {
       args.splice(1, 0, '--sandbox', 'workspace-write');
     }
 
-    yield* this.runProcess(codexPath, args, env, prompt, outputPath);
+    const spawnTarget = this.resolveCodexSpawnTarget(codexPath, args);
+    yield* this.runProcess(spawnTarget.command, spawnTarget.args, env, prompt, outputPath, spawnTarget.shell);
     yield { type: 'done' };
   }
 
@@ -115,12 +115,13 @@ export class CodexProvider implements AgentProvider {
     args: string[],
     env: NodeJS.ProcessEnv,
     stdin: string,
-    outputPath: string
+    outputPath: string,
+    shell: boolean
   ): AsyncGenerator<AgentEvent> {
     const child = spawn(command, args, {
       env,
       stdio: ['pipe', 'pipe', 'pipe'],
-      shell: process.platform === 'win32',
+      shell,
       windowsHide: true,
     });
     this.currentProcess = child;
@@ -184,6 +185,19 @@ export class CodexProvider implements AgentProvider {
 
     this.removeTempFile(outputPath);
     this.currentProcess = null;
+  }
+
+  private resolveCodexSpawnTarget(codexPath: string, args: string[]): { command: string; args: string[]; shell: boolean } {
+    if (process.platform !== 'win32' || !/codex\.cmd$/i.test(codexPath)) {
+      return { command: codexPath, args, shell: process.platform === 'win32' };
+    }
+
+    const codexJs = path.join(path.dirname(codexPath), 'node_modules', '@openai', 'codex', 'bin', 'codex.js');
+    if (!fs.existsSync(codexJs)) {
+      return { command: codexPath, args, shell: true };
+    }
+
+    return { command: 'node', args: [codexJs, ...args], shell: false };
   }
 
   private formatProgressLine(line: string): string {
