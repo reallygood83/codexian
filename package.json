@@ -1,7 +1,7 @@
 {
-  "name": "codexian",
-  "version": "0.2.18",
-  "description": "Codexian - OpenAI Codex CLI inside Obsidian",
+  "name": "codex-lab",
+  "version": "0.3.0",
+  "description": "Codex Lab - OpenAI Codex CLI inside Obsidian",
   "main": "main.js",
   "scripts": {
     "build:css": "node scripts/build-css.mjs",
