@@ -1,9 +1,9 @@
 {
-  "id": "codexian",
-  "name": "Codexian",
-  "version": "0.2.18",
+  "id": "codex-lab",
+  "name": "Codex Lab",
+  "version": "0.3.0",
   "minAppVersion": "1.5.0",
-  "description": "Run OpenAI Codex in your Obsidian vault, generate PNG or SVG visuals from notes, and set up oh-my-codex.",
+  "description": "Run OpenAI Codex CLI in your vault, generate PNG or SVG visuals from notes, and set up oh-my-codex.",
   "author": "reallygood83",
   "authorUrl": "https://x.com/reallygood83",
   "fundingUrl": {
